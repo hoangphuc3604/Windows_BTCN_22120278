@@ -13,6 +13,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <!-- rely on implicit Page items; no explicit include/remove for XAML files -->
+
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />

@@ -53,7 +53,8 @@ namespace Windows_22120278
             {
                 string folderPath = ApplicationData.Current.LocalFolder.Path;
                 string dbPath = System.IO.Path.Combine(folderPath, "paint.db");
-                options.UseSqlite($"Data Source={dbPath}");
+                options.UseSqlite($"Data Source={dbPath}", 
+                    b => b.MigrationsAssembly("Windows_22120278_Data"));
             });
 
             services.AddTransient<IProfileService, ProfileService>();
@@ -67,8 +68,15 @@ namespace Windows_22120278
         /// Invoked when the application is launched.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
+            // Ensure database is created and migrated
+            using (var scope = Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                await context.Database.MigrateAsync();
+            }
+
             _window = Services.GetRequiredService<MainWindow>();
             _window.Activate();
         }

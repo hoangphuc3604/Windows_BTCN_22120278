@@ -15,6 +15,12 @@ namespace Windows_22120278.Views
             InitializeComponent();
             ViewModel = App.Services.GetRequiredService<ProfileViewModel>();
             DataContext = ViewModel;
+            Loaded += ProfilePage_Loaded;
+        }
+
+        private async void ProfilePage_Loaded(object sender, RoutedEventArgs e)
+        {
+            await ViewModel.LoadProfilesCommand.ExecuteAsync(null);
         }
 
         private async void DeleteButton_Click(object sender, RoutedEventArgs e)

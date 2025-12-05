@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -22,27 +23,47 @@ namespace Windows_22120278.ViewModels
         [RelayCommand]
         private async Task LoadProfilesAsync()
         {
-            var profilesList = await _profileService.GetProfilesAsync();
-            Profiles.Clear();
-            foreach (var profile in profilesList)
+            try
             {
-                Profiles.Add(profile);
+                var profilesList = await _profileService.GetProfilesAsync();
+                Profiles.Clear();
+                foreach (var profile in profilesList)
+                {
+                    Profiles.Add(profile);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log error - in production, use proper logging
+                System.Diagnostics.Debug.WriteLine($"Error loading profiles: {ex.Message}");
             }
         }
 
         [RelayCommand]
         private async Task AddDefaultProfileAsync()
         {
-            var newProfile = new Profile
+            try
             {
-                Name = "New Profile",
-                IsDefaultThemeDark = false,
-                DefaultBoardWidth = 800,
-                DefaultBoardHeight = 600
-            };
+                var newProfile = new Profile
+                {
+                    Name = "New Profile",
+                    IsDefaultThemeDark = false,
+                    DefaultBoardWidth = 800,
+                    DefaultBoardHeight = 600
+                };
 
-            var addedProfile = await _profileService.AddProfileAsync(newProfile);
-            Profiles.Add(addedProfile);
+                var addedProfile = await _profileService.AddProfileAsync(newProfile);
+                if (addedProfile != null)
+                {
+                    Profiles.Add(addedProfile);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log error - in production, use proper logging
+                System.Diagnostics.Debug.WriteLine($"Error adding profile: {ex.Message}");
+                throw; // Re-throw to let UI handle it
+            }
         }
 
         [RelayCommand]

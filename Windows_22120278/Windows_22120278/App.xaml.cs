@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -15,6 +17,9 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
+using Windows_22120278.ViewModels;
+using Windows_22120278_Data;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -26,6 +31,7 @@ namespace Windows_22120278
     /// </summary>
     public partial class App : Application
     {
+        public static IServiceProvider Services { get; private set; } = null!;
         private Window? _window;
 
         /// <summary>
@@ -35,6 +41,24 @@ namespace Windows_22120278
         public App()
         {
             InitializeComponent();
+            Services = ConfigureServices();
+        }
+
+        private IServiceProvider ConfigureServices()
+        {
+            var services = new ServiceCollection();
+
+            services.AddDbContext<AppDbContext>(options =>
+            {
+                string folderPath = ApplicationData.Current.LocalFolder.Path;
+                string dbPath = System.IO.Path.Combine(folderPath, "paint.db");
+                options.UseSqlite($"Data Source={dbPath}");
+            });
+
+            services.AddTransient<ProfileViewModel>();
+            services.AddTransient<MainWindow>();
+
+            return services.BuildServiceProvider();
         }
 
         /// <summary>
@@ -43,7 +67,7 @@ namespace Windows_22120278
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            _window = new MainWindow();
+            _window = Services.GetRequiredService<MainWindow>();
             _window.Activate();
         }
     }

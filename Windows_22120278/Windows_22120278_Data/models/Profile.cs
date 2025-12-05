@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Models
+namespace Windows_22120278_Data.models
 {
     public class Profile
     {
@@ -17,3 +17,4 @@ namespace Models
         public double DefaultBoardHeight { get; set; }
     }
 }
+

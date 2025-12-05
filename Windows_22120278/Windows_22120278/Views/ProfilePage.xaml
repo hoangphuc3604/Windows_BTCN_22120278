@@ -29,6 +29,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
                         <TextBlock
@@ -40,6 +41,15 @@
 
                         <Button
                             Grid.Column="1"
+                            Content="Open Drawing"
+                            Click="OpenDrawingButton_Click"
+                            Tag="{x:Bind}"
+                            HorizontalAlignment="Right"
+                            Margin="0,0,8,0"
+                            Style="{StaticResource AccentButtonStyle}"/>
+
+                        <Button
+                            Grid.Column="2"
                             Content="Delete"
                             Click="DeleteButton_Click"
                             Tag="{x:Bind}"

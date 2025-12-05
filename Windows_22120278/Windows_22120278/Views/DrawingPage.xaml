@@ -36,11 +36,22 @@
             <!-- Stroke Thickness Slider -->
             <TextBlock Text="Stroke" Margin="0,8,0,0" />
             <Slider Minimum="1" Maximum="20" Value="{Binding CurrentStrokeSize, Mode=TwoWay}" />
+
+            <!-- Action Buttons -->
+            <Button Content="Clear Canvas"
+                    Command="{Binding ClearCanvasCommand}"
+                    Margin="0,16,0,0"
+                    Style="{StaticResource DefaultButtonStyle}" />
         </StackPanel>
 
         <!-- Drawing Area Column -->
         <ScrollViewer Grid.Column="1">
-            <Canvas x:Name="DrawingCanvas" Background="White" />
+            <Canvas x:Name="DrawingCanvas" 
+                    Background="White"
+                    PointerPressed="DrawingCanvas_PointerPressed"
+                    PointerMoved="DrawingCanvas_PointerMoved"
+                    PointerReleased="DrawingCanvas_PointerReleased"
+                    PointerCanceled="DrawingCanvas_PointerReleased" />
         </ScrollViewer>
     </Grid>
 </Page>

@@ -6,6 +6,8 @@ namespace Windows_22120278_Data
     public class AppDbContext : DbContext
     {
         public DbSet<Profile> Profiles { get; set; } = null!;
+        public DbSet<DrawingBoard> DrawingBoards { get; set; } = null!;
+        public DbSet<ShapeEntity> Shapes { get; set; } = null!;
 
         public AppDbContext() { }
 
@@ -17,6 +19,23 @@ namespace Windows_22120278_Data
             {
                 optionsBuilder.UseSqlite("Data Source=designTime.db");
             }
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<DrawingBoard>()
+                .HasMany(d => d.Shapes)
+                .WithOne(s => s.DrawingBoard)
+                .HasForeignKey(s => s.DrawingBoardId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Profile>()
+                .HasMany<DrawingBoard>()
+                .WithOne(p => p.Profile)
+                .HasForeignKey(d => d.ProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

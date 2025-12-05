@@ -18,6 +18,7 @@ using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
+using Windows_22120278.Services;
 using Windows_22120278.ViewModels;
 using Windows_22120278_Data;
 
@@ -55,6 +56,7 @@ namespace Windows_22120278
                 options.UseSqlite($"Data Source={dbPath}");
             });
 
+            services.AddTransient<IProfileService, ProfileService>();
             services.AddTransient<ProfileViewModel>();
             services.AddTransient<MainWindow>();
 

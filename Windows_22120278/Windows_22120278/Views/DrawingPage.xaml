@@ -27,6 +27,9 @@
                 <Button Content="Ellipse"
                         Command="{Binding SelectToolCommand}"
                         CommandParameter="{x:Bind models:ShapeType.Ellipse, Mode=OneTime}" />
+                <Button Content="Polygon"
+                        Command="{Binding SelectToolCommand}"
+                        CommandParameter="{x:Bind models:ShapeType.Polygon, Mode=OneTime}" />
             </StackPanel>
 
             <!-- Color Picker -->
@@ -51,7 +54,8 @@
                     PointerPressed="DrawingCanvas_PointerPressed"
                     PointerMoved="DrawingCanvas_PointerMoved"
                     PointerReleased="DrawingCanvas_PointerReleased"
-                    PointerCanceled="DrawingCanvas_PointerReleased" />
+                    PointerCanceled="DrawingCanvas_PointerReleased"
+                    DoubleTapped="DrawingCanvas_DoubleTapped" />
         </ScrollViewer>
     </Grid>
 </Page>

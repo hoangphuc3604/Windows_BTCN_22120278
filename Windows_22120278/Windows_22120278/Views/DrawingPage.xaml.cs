@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
@@ -21,6 +23,10 @@ namespace Windows_22120278.Views
         private Shape? _previewShape;
         private Point _startPoint;
         private bool _isDrawing = false;
+
+        private List<Point> _polygonPoints = new();
+        private Polygon? _polygonPreview;
+        private bool _isDrawingPolygon = false;
 
         private Windows_22120278_Data.models.Profile? _currentProfile;
 
@@ -51,6 +57,12 @@ namespace Windows_22120278.Views
 
         private void DrawingCanvas_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            if (ViewModel.CurrentShapeType == ShapeType.Polygon)
+            {
+                HandlePolygonClick(e);
+                return;
+            }
+
             if (_isDrawing) return;
 
             var point = e.GetCurrentPoint(DrawingCanvas);
@@ -90,27 +102,95 @@ namespace Windows_22120278.Views
             e.Handled = true;
         }
 
+        private void HandlePolygonClick(PointerRoutedEventArgs e)
+        {
+            var point = e.GetCurrentPoint(DrawingCanvas);
+            var clickPoint = point.Position;
+
+            if (!_isDrawingPolygon)
+            {
+                _polygonPoints.Clear();
+                _polygonPoints.Add(clickPoint);
+                _isDrawingPolygon = true;
+
+                _polygonPreview = new Polygon
+                {
+                    Stroke = new Microsoft.UI.Xaml.Media.SolidColorBrush(ViewModel.CurrentColor),
+                    StrokeThickness = ViewModel.CurrentStrokeSize,
+                    Fill = null
+                };
+
+                var pointCollection = new PointCollection();
+                pointCollection.Add(clickPoint);
+                _polygonPreview.Points = pointCollection;
+
+                DrawingCanvas.Children.Add(_polygonPreview);
+            }
+            else
+            {
+                _polygonPoints.Add(clickPoint);
+                UpdatePolygonPreview();
+            }
+
+            e.Handled = true;
+        }
+
+        private void UpdatePolygonPreview()
+        {
+            if (_polygonPreview != null && _polygonPoints.Count > 0)
+            {
+                var pointCollection = new PointCollection();
+                foreach (var pt in _polygonPoints)
+                {
+                    pointCollection.Add(pt);
+                }
+                _polygonPreview.Points = pointCollection;
+            }
+        }
+
         private void DrawingCanvas_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
+            if (ViewModel.CurrentShapeType == ShapeType.Polygon && _isDrawingPolygon)
+            {
+                var point = e.GetCurrentPoint(DrawingCanvas);
+                var currentPoint = point.Position;
+
+                if (_polygonPoints.Count > 0)
+                {
+                    var tempPoints = new List<Point>(_polygonPoints) { currentPoint };
+                    var pointCollection = new PointCollection();
+                    foreach (var pt in tempPoints)
+                    {
+                        pointCollection.Add(pt);
+                    }
+                    if (_polygonPreview != null)
+                    {
+                        _polygonPreview.Points = pointCollection;
+                    }
+                }
+                e.Handled = true;
+                return;
+            }
+
             if (!_isDrawing || _previewShape == null) return;
 
-            var point = e.GetCurrentPoint(DrawingCanvas);
-            var currentPoint = point.Position;
+            var point2 = e.GetCurrentPoint(DrawingCanvas);
+            var currentPoint2 = point2.Position;
 
             if (ViewModel.CurrentShapeType == ShapeType.Line)
             {
                 if (_previewShape is Line line)
                 {
-                    line.X2 = currentPoint.X;
-                    line.Y2 = currentPoint.Y;
+                    line.X2 = currentPoint2.X;
+                    line.Y2 = currentPoint2.Y;
                 }
             }
             else
             {
-                var width = Math.Abs(currentPoint.X - _startPoint.X);
-                var height = Math.Abs(currentPoint.Y - _startPoint.Y);
-                var left = Math.Min(_startPoint.X, currentPoint.X);
-                var top = Math.Min(_startPoint.Y, currentPoint.Y);
+                var width = Math.Abs(currentPoint2.X - _startPoint.X);
+                var height = Math.Abs(currentPoint2.Y - _startPoint.Y);
+                var left = Math.Min(_startPoint.X, currentPoint2.X);
+                var top = Math.Min(_startPoint.Y, currentPoint2.Y);
 
                 Canvas.SetLeft(_previewShape, left);
                 Canvas.SetTop(_previewShape, top);
@@ -123,6 +203,11 @@ namespace Windows_22120278.Views
 
         private void DrawingCanvas_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            if (ViewModel.CurrentShapeType == ShapeType.Polygon)
+            {
+                return;
+            }
+
             if (!_isDrawing) return;
 
             var point = e.GetCurrentPoint(DrawingCanvas);
@@ -146,6 +231,45 @@ namespace Windows_22120278.Views
             e.Handled = true;
         }
 
+        private void DrawingCanvas_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            if (ViewModel.CurrentShapeType == ShapeType.Polygon && _isDrawingPolygon && _polygonPoints.Count >= 3)
+            {
+                if (_polygonPreview != null)
+                {
+                    DrawingCanvas.Children.Remove(_polygonPreview);
+                }
+
+                var polygonShape = new PolygonShape
+                {
+                    Points = new List<Point>(_polygonPoints),
+                    Color = new Microsoft.UI.Xaml.Media.SolidColorBrush(ViewModel.CurrentColor),
+                    StrokeThickness = ViewModel.CurrentStrokeSize
+                };
+
+                if (_polygonPoints.Count > 0)
+                {
+                    var minX = _polygonPoints.Min(p => p.X);
+                    var minY = _polygonPoints.Min(p => p.Y);
+                    var maxX = _polygonPoints.Max(p => p.X);
+                    var maxY = _polygonPoints.Max(p => p.Y);
+
+                    polygonShape.X = minX;
+                    polygonShape.Y = minY;
+                    polygonShape.Width = maxX - minX;
+                    polygonShape.Height = maxY - minY;
+                }
+
+                ViewModel.Shapes.Add(polygonShape);
+
+                _polygonPreview = null;
+                _polygonPoints.Clear();
+                _isDrawingPolygon = false;
+
+                e.Handled = true;
+            }
+        }
+
         private Shape? CreatePreviewShape(ShapeType shapeType)
         {
             return shapeType switch
@@ -153,6 +277,7 @@ namespace Windows_22120278.Views
                 ShapeType.Line => new Line(),
                 ShapeType.Rectangle => new Rectangle(),
                 ShapeType.Ellipse => new Ellipse(),
+                ShapeType.Polygon => new Polygon(),
                 _ => null
             };
         }
@@ -209,7 +334,7 @@ namespace Windows_22120278.Views
             var shapesToRemove = new List<UIElement>();
             foreach (var child in DrawingCanvas.Children)
             {
-                if (child != _previewShape && child is Shape)
+                if (child != _previewShape && child != _polygonPreview && child is Shape)
                 {
                     shapesToRemove.Add(child);
                 }
@@ -231,6 +356,25 @@ namespace Windows_22120278.Views
 
         private Shape? CreateUIShapeFromDrawingShape(DrawingShape drawingShape)
         {
+            if (drawingShape is PolygonShape polygonShape)
+            {
+                var polygon = new Polygon
+                {
+                    Stroke = polygonShape.Color,
+                    StrokeThickness = polygonShape.StrokeThickness,
+                    Fill = null
+                };
+
+                var pointCollection = new PointCollection();
+                foreach (var pt in polygonShape.Points)
+                {
+                    pointCollection.Add(pt);
+                }
+                polygon.Points = pointCollection;
+
+                return polygon;
+            }
+
             Shape? uiShape = drawingShape switch
             {
                 LineShape => new Line(),

@@ -44,6 +44,16 @@ namespace Windows_22120278.ViewModels
             var addedProfile = await _profileService.AddProfileAsync(newProfile);
             Profiles.Add(addedProfile);
         }
+
+        [RelayCommand]
+        private async Task DeleteProfileAsync(Profile profile)
+        {
+            if (profile != null)
+            {
+                await _profileService.DeleteProfileAsync(profile.Id);
+                Profiles.Remove(profile);
+            }
+        }
     }
 }
 

@@ -5,7 +5,7 @@
     xmlns:lvc="using:LiveChartsCore.SkiaSharpView.WinUI"
     xmlns:vm="using:Windows_22120278.ViewModels">
 
-    <Grid Padding="20">
+    <Grid Padding="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -15,15 +15,24 @@
         <!-- Breadcrumbs -->
         <BreadcrumbBar Grid.Row="0"
                        x:Name="BreadcrumbBarControl"
-                       Margin="0,0,0,12"
+                       Margin="0,0,0,16"
                        ItemsSource="{x:Bind BreadcrumbItems, Mode=OneWay}"
                        ItemClicked="BreadcrumbBar_ItemClicked" />
 
         <!-- Total boards -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12">
-            <TextBlock Text="Total Boards:" VerticalAlignment="Center" />
-            <TextBlock Text="{Binding TotalBoards, Mode=OneWay}" VerticalAlignment="Center" FontWeight="Bold" />
-        </StackPanel>
+        <Border Grid.Row="1"
+                Background="White"
+                BorderBrush="LightGray"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="16"
+                Margin="0,0,0,16">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <FontIcon Glyph="&#xE8A5;" FontFamily="Segoe Fluent Icons" FontSize="20" VerticalAlignment="Center"/>
+                <TextBlock Text="Total Boards:" VerticalAlignment="Center" FontSize="14" />
+                <TextBlock Text="{Binding TotalBoards, Mode=OneWay}" VerticalAlignment="Center" FontWeight="Bold" FontSize="14" />
+            </StackPanel>
+        </Border>
 
         <!-- Pie chart -->
         <lvc:PieChart Grid.Row="2"

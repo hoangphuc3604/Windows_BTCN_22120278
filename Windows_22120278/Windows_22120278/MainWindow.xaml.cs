@@ -41,6 +41,10 @@ namespace Windows_22120278
                 _appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
                 _appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
                 _appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+                _appWindow.TitleBar.ButtonForegroundColor = Colors.Black;
+                _appWindow.TitleBar.ButtonInactiveForegroundColor = Colors.Gray;
+                _appWindow.TitleBar.BackgroundColor = Colors.Transparent;
+                _appWindow.TitleBar.InactiveBackgroundColor = Colors.Transparent;
                 
                 NavView.PaneTitle = "Windows_22120278";
             }

@@ -35,8 +35,8 @@
                                       HorizontalAlignment="Center"
                                       Margin="0,0,0,4" />
                             <StackPanel Orientation="Horizontal">
-                                <Button Content="Line"
-                                        Command="{Binding SelectToolCommand}"
+                <Button Content="Line"
+                        Command="{Binding SelectToolCommand}"
                                         CommandParameter="{x:Bind models:ShapeType.Line, Mode=OneTime}"
                                         Width="60"
                                         Height="32"
@@ -45,8 +45,8 @@
                                         <ToolTip Content="Line" />
                                     </ToolTipService.ToolTip>
                                 </Button>
-                                <Button Content="Rect"
-                                        Command="{Binding SelectToolCommand}"
+                <Button Content="Rect"
+                        Command="{Binding SelectToolCommand}"
                                         CommandParameter="{x:Bind models:ShapeType.Rectangle, Mode=OneTime}"
                                         Width="60"
                                         Height="32"
@@ -55,8 +55,8 @@
                                         <ToolTip Content="Rectangle" />
                                     </ToolTipService.ToolTip>
                                 </Button>
-                                <Button Content="Ellipse"
-                                        Command="{Binding SelectToolCommand}"
+                <Button Content="Ellipse"
+                        Command="{Binding SelectToolCommand}"
                                         CommandParameter="{x:Bind models:ShapeType.Ellipse, Mode=OneTime}"
                                         Width="60"
                                         Height="32"
@@ -208,10 +208,24 @@
                        BorderThickness="1,0,0,0"
                        Padding="12"
                        Visibility="Collapsed">
-                <TextBlock Text="Properties"
-                          FontSize="14"
-                          FontWeight="Bold"
-                          Margin="0,0,0,12" />
+                <!-- Header with Close button -->
+                <Grid Margin="0,0,0,12">
+                    <TextBlock Text="Properties"
+                              FontSize="14"
+                              FontWeight="Bold"
+                              VerticalAlignment="Center" />
+                    <Button x:Name="ClosePropertiesButton"
+                           Content="✕"
+                           FontSize="16"
+                           Width="28"
+                           Height="28"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           Padding="0"
+                           Click="ClosePropertiesButton_Click"
+                           Style="{StaticResource DefaultButtonStyle}"
+                           ToolTipService.ToolTip="Close" />
+                </Grid>
 
                 <!-- Color -->
                 <TextBlock Text="Color"
@@ -263,7 +277,7 @@
                               VerticalAlignment="Center"
                               Margin="8,0,0,0"
                               FontSize="11" />
-                </StackPanel>
+            </StackPanel>
 
                 <!-- Height -->
                 <TextBlock Text="Height"
@@ -301,14 +315,21 @@
                               VerticalAlignment="Center"
                               Margin="8,0,0,0"
                               FontSize="11" />
-                </StackPanel>
+        </StackPanel>
+
+                <!-- Save Changes Button -->
+                <Button Content="Save Changes"
+                        Command="{Binding SaveDrawingCommand}"
+                        Style="{StaticResource AccentButtonStyle}"
+                        HorizontalAlignment="Stretch"
+                        Margin="0,8,0,8" />
 
                 <!-- Delete Button -->
                 <Button Content="Delete Shape"
                         Command="{Binding DeleteSelectedShapeCommand}"
                         Style="{StaticResource AccentButtonStyle}"
                         HorizontalAlignment="Stretch"
-                        Margin="0,8,0,0" />
+                        Margin="0,0,0,0" />
             </StackPanel>
         </Grid>
     </Grid>

@@ -194,6 +194,11 @@ namespace Windows_22120278.Views
 
             if (_isDrawing) return;
 
+            if (source == DrawingCanvas && ViewModel.SelectedShape != null)
+            {
+                ViewModel.SelectedShape = null;
+            }
+
             var point = e.GetCurrentPoint(DrawingCanvas);
             _startPoint = point.Position;
             _isDrawing = true;
@@ -569,6 +574,11 @@ namespace Windows_22120278.Views
                 UpdateShapeColorPreview();
                 RenderAllShapes();
             }
+        }
+
+        private void ClosePropertiesButton_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.SelectedShape = null;
         }
     }
 }

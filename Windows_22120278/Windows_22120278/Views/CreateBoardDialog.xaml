@@ -1,0 +1,62 @@
+<ContentDialog
+    x:Class="Windows_22120278.Views.CreateBoardDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Create New Board"
+    PrimaryButtonText="Create"
+    CloseButtonText="Cancel"
+    DefaultButton="Primary">
+
+    <StackPanel Spacing="16" MinWidth="400">
+        <TextBox x:Name="NameTextBox"
+                 Header="Board Name"
+                 PlaceholderText="Enter board name" />
+
+        <NumberBox x:Name="WidthNumberBox"
+                   Header="Width"
+                   Minimum="100"
+                   Maximum="5000"
+                   Value="800"
+                   SpinButtonPlacementMode="Inline" />
+
+        <NumberBox x:Name="HeightNumberBox"
+                   Header="Height"
+                   Minimum="100"
+                   Maximum="5000"
+                   Value="600"
+                   SpinButtonPlacementMode="Inline" />
+
+        <TextBlock Text="Background Color"
+                   FontSize="12"
+                   FontWeight="SemiBold"
+                   Margin="0,8,0,4" />
+        <Button x:Name="ColorPickerButton"
+                Width="200"
+                Height="48"
+                CornerRadius="4"
+                Padding="8"
+                HorizontalAlignment="Left">
+            <Button.Flyout>
+                <Flyout Placement="Bottom">
+                    <ColorPicker x:Name="ColorPickerControl"
+                                IsAlphaEnabled="False"
+                                IsColorSpectrumVisible="True"
+                                IsColorChannelTextInputVisible="True"
+                                IsHexInputVisible="True"
+                                IsMoreButtonVisible="True"
+                                Width="300" />
+                </Flyout>
+            </Button.Flyout>
+            <Border x:Name="ColorPreviewBorder"
+                   Background="White"
+                   BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                   BorderThickness="1.5"
+                   CornerRadius="4"
+                   Width="32"
+                   Height="32"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center" />
+        </Button>
+    </StackPanel>
+</ContentDialog>
+

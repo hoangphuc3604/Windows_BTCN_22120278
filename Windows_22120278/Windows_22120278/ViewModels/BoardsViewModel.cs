@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml.Controls;
 using Windows_22120278.Services;
+using Windows_22120278.Views;
 using Windows_22120278_Data.models;
 
 namespace Windows_22120278.ViewModels
@@ -79,23 +81,38 @@ namespace Windows_22120278.ViewModels
             if (Profile == null)
                 return;
 
+            await Task.CompletedTask;
+        }
+
+        public async Task<bool> CreateBoardWithDialogAsync(double defaultWidth, double defaultHeight, Microsoft.UI.Xaml.XamlRoot xamlRoot)
+        {
             try
             {
-                var newBoard = new DrawingBoard
-                {
-                    Name = $"Board {DateTime.Now:yyyy-MM-dd HH:mm:ss}",
-                    Width = Profile.DefaultBoardWidth,
-                    Height = Profile.DefaultBoardHeight,
-                    BackgroundColor = "#FFFFFF",
-                    ProfileId = Profile.Id
-                };
+                var createDialog = new CreateBoardDialog(defaultWidth, defaultHeight, "#FFFFFF");
+                createDialog.XamlRoot = xamlRoot;
+                var result = await createDialog.ShowAsync();
 
-                var createdBoard = await _drawingService.CreateDrawingBoardAsync(newBoard);
-                Boards.Add(createdBoard);
+                if (result == ContentDialogResult.Primary)
+                {
+                    var newBoard = new DrawingBoard
+                    {
+                        Name = createDialog.GetBoardName(),
+                        Width = createDialog.GetWidth(),
+                        Height = createDialog.GetHeight(),
+                        BackgroundColor = createDialog.GetBackgroundColor(),
+                        ProfileId = Profile!.Id
+                    };
+
+                    var createdBoard = await _drawingService.CreateDrawingBoardAsync(newBoard);
+                    Boards.Add(createdBoard);
+                    return true;
+                }
+                return false;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error creating board: {ex.Message}");
+                return false;
             }
         }
 

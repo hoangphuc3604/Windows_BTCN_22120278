@@ -48,6 +48,17 @@ namespace Windows_22120278.Views
             }
         }
 
+        private async void CreateBoardButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel.Profile != null)
+            {
+                await ViewModel.CreateBoardWithDialogAsync(
+                    ViewModel.Profile.DefaultBoardWidth,
+                    ViewModel.Profile.DefaultBoardHeight,
+                    this.XamlRoot);
+            }
+        }
+
         private void RenderTemplatePreviews()
         {
             if (TemplatesGridView == null)

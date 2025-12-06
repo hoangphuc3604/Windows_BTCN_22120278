@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -36,6 +37,25 @@ namespace Windows_22120278.Views
                 if (frame != null)
                 {
                     frame.Navigate(typeof(BoardsPage), profile);
+                }
+            }
+        }
+
+        private async void EditButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is Profile profile)
+            {
+                var editDialog = new EditProfileDialog(profile);
+                editDialog.XamlRoot = this.XamlRoot;
+                var result = await editDialog.ShowAsync();
+
+                if (result == ContentDialogResult.Primary)
+                {
+                    var updatedProfile = editDialog.GetUpdatedProfile();
+                    if (updatedProfile != null)
+                    {
+                        await ViewModel.UpdateProfileAsync(profile, updatedProfile);
+                    }
                 }
             }
         }

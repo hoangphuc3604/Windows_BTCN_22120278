@@ -28,6 +28,21 @@ namespace Windows_22120278.Services
             return profile;
         }
 
+        public async Task<Profile> UpdateProfileAsync(Profile profile)
+        {
+            var existingProfile = await _context.Profiles.FindAsync(profile.Id);
+            if (existingProfile != null)
+            {
+                existingProfile.Name = profile.Name;
+                existingProfile.IsDefaultThemeDark = profile.IsDefaultThemeDark;
+                existingProfile.DefaultBoardWidth = profile.DefaultBoardWidth;
+                existingProfile.DefaultBoardHeight = profile.DefaultBoardHeight;
+                await _context.SaveChangesAsync();
+                return existingProfile;
+            }
+            return profile;
+        }
+
         public async Task DeleteProfileAsync(int id)
         {
             var profile = await _context.Profiles.FindAsync(id);

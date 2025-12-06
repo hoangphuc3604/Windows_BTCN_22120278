@@ -78,6 +78,38 @@ namespace Windows_22120278.ViewModels
         }
 
         [RelayCommand]
+        private async Task EditProfileAsync(Profile profile)
+        {
+            if (profile == null)
+                return;
+
+            await Task.CompletedTask;
+        }
+
+        public async Task<bool> UpdateProfileAsync(Profile originalProfile, Profile updatedProfile)
+        {
+            try
+            {
+                var savedProfile = await _profileService.UpdateProfileAsync(updatedProfile);
+                var index = Profiles.IndexOf(originalProfile);
+                if (index >= 0)
+                {
+                    Profiles[index] = savedProfile;
+                }
+                
+                if (_selectedProfileService.SelectedProfile?.Id == savedProfile.Id)
+                {
+                    _selectedProfileService.SelectedProfile = savedProfile;
+                }
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        [RelayCommand]
         private async Task DeleteProfileAsync(Profile profile)
         {
             if (profile != null)

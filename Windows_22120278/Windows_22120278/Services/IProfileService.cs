@@ -8,6 +8,7 @@ namespace Windows_22120278.Services
     {
         Task<List<Profile>> GetProfilesAsync();
         Task<Profile> AddProfileAsync(Profile profile);
+        Task<Profile> UpdateProfileAsync(Profile profile);
         Task DeleteProfileAsync(int id);
     }
 }

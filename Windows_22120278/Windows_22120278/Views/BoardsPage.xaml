@@ -56,7 +56,7 @@
 
                     <Button
                         Grid.Row="0"
-                        Command="{x:Bind ViewModel.CreateBoardCommand}"
+                        Click="CreateBoardButton_Click"
                         HorizontalAlignment="Left"
                         CornerRadius="4"
                         Padding="12,8"

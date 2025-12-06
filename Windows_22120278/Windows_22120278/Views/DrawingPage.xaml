@@ -40,25 +40,41 @@
                                         CommandParameter="{x:Bind models:ShapeType.Line, Mode=OneTime}"
                                         Width="60"
                                         Height="32"
-                                        Margin="2,0" />
+                                        Margin="2,0">
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Line" />
+                                    </ToolTipService.ToolTip>
+                                </Button>
                                 <Button Content="Rect"
                                         Command="{Binding SelectToolCommand}"
                                         CommandParameter="{x:Bind models:ShapeType.Rectangle, Mode=OneTime}"
                                         Width="60"
                                         Height="32"
-                                        Margin="2,0" />
+                                        Margin="2,0">
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Rectangle" />
+                                    </ToolTipService.ToolTip>
+                                </Button>
                                 <Button Content="Ellipse"
                                         Command="{Binding SelectToolCommand}"
                                         CommandParameter="{x:Bind models:ShapeType.Ellipse, Mode=OneTime}"
                                         Width="60"
                                         Height="32"
-                                        Margin="2,0" />
+                                        Margin="2,0">
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Ellipse" />
+                                    </ToolTipService.ToolTip>
+                                </Button>
                                 <Button Content="Polygon"
                                         Command="{Binding SelectToolCommand}"
                                         CommandParameter="{x:Bind models:ShapeType.Polygon, Mode=OneTime}"
                                         Width="60"
                                         Height="32"
-                                        Margin="2,0" />
+                                        Margin="2,0">
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Polygon" />
+                                    </ToolTipService.ToolTip>
+                                </Button>
                             </StackPanel>
                         </StackPanel>
                     </Border>

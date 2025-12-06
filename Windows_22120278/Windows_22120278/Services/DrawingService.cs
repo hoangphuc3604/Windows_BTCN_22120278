@@ -101,6 +101,26 @@ namespace Windows_22120278.Services
                 var pointsData = JsonSerializer.Serialize(polygonShape.Points.Select(p => new { X = p.X, Y = p.Y }));
                 shapeEntity.PointsData = pointsData;
             }
+            else if (drawingShape is CircleShape circleShape)
+            {
+                shapeEntity.Type = ShapeType.Circle;
+                shapeEntity.StartX = circleShape.X;
+                shapeEntity.StartY = circleShape.Y;
+                var size = Math.Max(circleShape.Width, circleShape.Height);
+                shapeEntity.EndX = circleShape.X + size;
+                shapeEntity.EndY = circleShape.Y + size;
+            }
+            else if (drawingShape is TriangleShape triangleShape)
+            {
+                shapeEntity.Type = ShapeType.Triangle;
+                shapeEntity.StartX = triangleShape.X;
+                shapeEntity.StartY = triangleShape.Y;
+                shapeEntity.EndX = triangleShape.X + triangleShape.Width;
+                shapeEntity.EndY = triangleShape.Y + triangleShape.Height;
+
+                var pointsData = JsonSerializer.Serialize(triangleShape.Points.Select(p => new { X = p.X, Y = p.Y }));
+                shapeEntity.PointsData = pointsData;
+            }
 
             return shapeEntity;
         }
@@ -191,6 +211,21 @@ namespace Windows_22120278.Services
                     Height = shapeEntity.EndY - shapeEntity.StartY
                 },
                 ShapeType.Polygon => new PolygonShape
+                {
+                    X = shapeEntity.StartX,
+                    Y = shapeEntity.StartY,
+                    Width = shapeEntity.EndX - shapeEntity.StartX,
+                    Height = shapeEntity.EndY - shapeEntity.StartY,
+                    Points = DeserializePolygonPoints(shapeEntity.PointsData)
+                },
+                ShapeType.Circle => new CircleShape
+                {
+                    X = shapeEntity.StartX,
+                    Y = shapeEntity.StartY,
+                    Width = shapeEntity.EndX - shapeEntity.StartX,
+                    Height = shapeEntity.EndX - shapeEntity.StartX
+                },
+                ShapeType.Triangle => new TriangleShape
                 {
                     X = shapeEntity.StartX,
                     Y = shapeEntity.StartY,

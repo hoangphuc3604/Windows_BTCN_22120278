@@ -30,6 +30,10 @@ namespace Windows_22120278.Views
         private Polygon? _polygonPreview;
         private bool _isDrawingPolygon = false;
 
+        private List<Point> _trianglePoints = new();
+        private Polygon? _trianglePreview;
+        private bool _isDrawingTriangle = false;
+
         private Windows_22120278_Data.models.Profile? _currentProfile;
         private Dictionary<UIElement, DrawingShape> _shapeMapping = new();
         private DrawingShape? _previousSelectedShape;
@@ -172,13 +176,27 @@ namespace Windows_22120278.Views
                         }
                         else if (drawingShape is PolygonShape polygonShape && uiElement is Polygon polygon)
                         {
-                            // For polygon, width/height changes might affect points, so update all
                             var newPoints = new PointCollection();
                             foreach (var pt in polygonShape.Points)
                             {
                                 newPoints.Add(pt);
                             }
                             polygon.Points = newPoints;
+                        }
+                        else if (drawingShape is TriangleShape triangleShape && uiElement is Polygon triangle)
+                        {
+                            var newPoints = new PointCollection();
+                            foreach (var pt in triangleShape.Points)
+                            {
+                                newPoints.Add(pt);
+                            }
+                            triangle.Points = newPoints;
+                        }
+                        else if (drawingShape is CircleShape circleShape && uiElement is Shape circle)
+                        {
+                            var size = Math.Max(circleShape.Width, circleShape.Height);
+                            circle.Width = size;
+                            circle.Height = size;
                         }
                         else if (uiElement is Shape shapeSize)
                         {
@@ -198,13 +216,29 @@ namespace Windows_22120278.Views
                         }
                         else if (drawingShape is PolygonShape polygonShape && uiElement is Polygon polygon)
                         {
-                            // For polygon, we need to update all points
                             var newPoints = new PointCollection();
                             foreach (var pt in polygonShape.Points)
                             {
                                 newPoints.Add(pt);
                             }
                             polygon.Points = newPoints;
+                        }
+                        else if (drawingShape is TriangleShape triangleShape && uiElement is Polygon triangle)
+                        {
+                            var newPoints = new PointCollection();
+                            foreach (var pt in triangleShape.Points)
+                            {
+                                newPoints.Add(pt);
+                            }
+                            triangle.Points = newPoints;
+                        }
+                        else if (drawingShape is CircleShape circleShape && uiElement is Shape circle)
+                        {
+                            var size = Math.Max(circleShape.Width, circleShape.Height);
+                            Canvas.SetLeft(circle, circleShape.X);
+                            Canvas.SetTop(circle, circleShape.Y);
+                            circle.Width = size;
+                            circle.Height = size;
                         }
                         else
                         {
@@ -319,6 +353,12 @@ namespace Windows_22120278.Views
                 return;
             }
 
+            if (ViewModel.CurrentShapeType == ShapeType.Triangle)
+            {
+                HandleTriangleClick(e);
+                return;
+            }
+
             if (_isDrawing) return;
 
             if (source == DrawingCanvas && ViewModel.SelectedShape != null)
@@ -348,6 +388,13 @@ namespace Windows_22120278.Views
                         line.X2 = _startPoint.X;
                         line.Y2 = _startPoint.Y;
                     }
+                }
+                else if (ViewModel.CurrentShapeType == ShapeType.Circle)
+                {
+                    Canvas.SetLeft(_previewShape, _startPoint.X);
+                    Canvas.SetTop(_previewShape, _startPoint.Y);
+                    _previewShape.Width = 0;
+                    _previewShape.Height = 0;
                 }
                 else
                 {
@@ -433,6 +480,28 @@ namespace Windows_22120278.Views
                 return;
             }
 
+            if (ViewModel.CurrentShapeType == ShapeType.Triangle && _isDrawingTriangle)
+            {
+                var point = e.GetCurrentPoint(DrawingCanvas);
+                var currentPoint = point.Position;
+
+                if (_trianglePoints.Count > 0 && _trianglePoints.Count < 3)
+                {
+                    var tempPoints = new List<Point>(_trianglePoints) { currentPoint };
+                    var pointCollection = new PointCollection();
+                    foreach (var pt in tempPoints)
+                    {
+                        pointCollection.Add(pt);
+                    }
+                    if (_trianglePreview != null)
+                    {
+                        _trianglePreview.Points = pointCollection;
+                    }
+                }
+                e.Handled = true;
+                return;
+            }
+
             if (!_isDrawing || _previewShape == null) return;
 
             var point2 = e.GetCurrentPoint(DrawingCanvas);
@@ -445,6 +514,19 @@ namespace Windows_22120278.Views
                     line.X2 = currentPoint2.X;
                     line.Y2 = currentPoint2.Y;
                 }
+            }
+            else if (ViewModel.CurrentShapeType == ShapeType.Circle)
+            {
+                var width = Math.Abs(currentPoint2.X - _startPoint.X);
+                var height = Math.Abs(currentPoint2.Y - _startPoint.Y);
+                var size = Math.Max(width, height);
+                var left = _startPoint.X - size / 2;
+                var top = _startPoint.Y - size / 2;
+
+                Canvas.SetLeft(_previewShape, left);
+                Canvas.SetTop(_previewShape, top);
+                _previewShape.Width = size;
+                _previewShape.Height = size;
             }
             else
             {
@@ -464,7 +546,7 @@ namespace Windows_22120278.Views
 
         private void DrawingCanvas_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (ViewModel.CurrentShapeType == ShapeType.Polygon)
+            if (ViewModel.CurrentShapeType == ShapeType.Polygon || ViewModel.CurrentShapeType == ShapeType.Triangle)
             {
                 return;
             }
@@ -531,6 +613,83 @@ namespace Windows_22120278.Views
             }
         }
 
+        private void HandleTriangleClick(PointerRoutedEventArgs e)
+        {
+            var point = e.GetCurrentPoint(DrawingCanvas);
+            var clickPoint = point.Position;
+
+            if (!_isDrawingTriangle)
+            {
+                _trianglePoints.Clear();
+                _trianglePoints.Add(clickPoint);
+                _isDrawingTriangle = true;
+
+                _trianglePreview = new Polygon
+                {
+                    Stroke = new Microsoft.UI.Xaml.Media.SolidColorBrush(ViewModel.CurrentColor),
+                    StrokeThickness = ViewModel.CurrentStrokeSize,
+                    Fill = null
+                };
+
+                var pointCollection = new PointCollection();
+                pointCollection.Add(clickPoint);
+                _trianglePreview.Points = pointCollection;
+
+                DrawingCanvas.Children.Add(_trianglePreview);
+            }
+            else if (_trianglePoints.Count < 3)
+            {
+                _trianglePoints.Add(clickPoint);
+                UpdateTrianglePreview();
+
+                if (_trianglePoints.Count == 3)
+                {
+                    if (_trianglePreview != null)
+                    {
+                        DrawingCanvas.Children.Remove(_trianglePreview);
+                    }
+
+                    var triangleShape = new TriangleShape
+                    {
+                        Points = new List<Point>(_trianglePoints),
+                        Color = new Microsoft.UI.Xaml.Media.SolidColorBrush(ViewModel.CurrentColor),
+                        StrokeThickness = ViewModel.CurrentStrokeSize
+                    };
+
+                    var minX = _trianglePoints.Min(p => p.X);
+                    var minY = _trianglePoints.Min(p => p.Y);
+                    var maxX = _trianglePoints.Max(p => p.X);
+                    var maxY = _trianglePoints.Max(p => p.Y);
+
+                    triangleShape.X = minX;
+                    triangleShape.Y = minY;
+                    triangleShape.Width = maxX - minX;
+                    triangleShape.Height = maxY - minY;
+
+                    ViewModel.Shapes.Add(triangleShape);
+
+                    _trianglePreview = null;
+                    _trianglePoints.Clear();
+                    _isDrawingTriangle = false;
+                }
+            }
+
+            e.Handled = true;
+        }
+
+        private void UpdateTrianglePreview()
+        {
+            if (_trianglePreview != null && _trianglePoints.Count > 0)
+            {
+                var pointCollection = new PointCollection();
+                foreach (var pt in _trianglePoints)
+                {
+                    pointCollection.Add(pt);
+                }
+                _trianglePreview.Points = pointCollection;
+            }
+        }
+
         private Shape? CreatePreviewShape(ShapeType shapeType)
         {
             return shapeType switch
@@ -538,7 +697,9 @@ namespace Windows_22120278.Views
                 ShapeType.Line => new Line(),
                 ShapeType.Rectangle => new Rectangle(),
                 ShapeType.Ellipse => new Ellipse(),
+                ShapeType.Circle => new Ellipse(),
                 ShapeType.Polygon => new Polygon(),
+                ShapeType.Triangle => new Polygon(),
                 _ => null
             };
         }
@@ -573,6 +734,13 @@ namespace Windows_22120278.Views
                     Width = width,
                     Height = height
                 },
+                ShapeType.Circle => new CircleShape
+                {
+                    X = left,
+                    Y = top,
+                    Width = Math.Max(width, height),
+                    Height = Math.Max(width, height)
+                },
                 _ => null
             };
 
@@ -595,7 +763,7 @@ namespace Windows_22120278.Views
             var shapesToRemove = new List<UIElement>();
             foreach (var child in DrawingCanvas.Children)
             {
-                if (child != _previewShape && child != _polygonPreview && child is Shape)
+                if (child != _previewShape && child != _polygonPreview && child != _trianglePreview && child is Shape)
                 {
                     shapesToRemove.Add(child);
                 }
@@ -661,11 +829,31 @@ namespace Windows_22120278.Views
                 return polygon;
             }
 
+            if (drawingShape is TriangleShape triangleShape)
+            {
+                var triangle = new Polygon
+                {
+                    Stroke = triangleShape.Color,
+                    StrokeThickness = triangleShape.StrokeThickness,
+                    Fill = null
+                };
+
+                var pointCollection = new PointCollection();
+                foreach (var pt in triangleShape.Points)
+                {
+                    pointCollection.Add(pt);
+                }
+                triangle.Points = pointCollection;
+
+                return triangle;
+            }
+
             Shape? uiShape = drawingShape switch
             {
                 LineShape => new Line(),
                 RectangleShape => new Rectangle(),
                 EllipseShape => new Ellipse(),
+                CircleShape => new Ellipse(),
                 _ => null
             };
 
@@ -683,6 +871,14 @@ namespace Windows_22120278.Views
                     line.X2 = lineShape.X + lineShape.Width;
                     line.Y2 = lineShape.Y + lineShape.Height;
                 }
+            }
+            else if (drawingShape is CircleShape circleShape)
+            {
+                Canvas.SetLeft(uiShape, circleShape.X);
+                Canvas.SetTop(uiShape, circleShape.Y);
+                var size = Math.Max(circleShape.Width, circleShape.Height);
+                uiShape.Width = size;
+                uiShape.Height = size;
             }
             else
             {
@@ -758,6 +954,34 @@ namespace Windows_22120278.Views
                             newPoints.Add(pt);
                         }
                         polygon.Points = newPoints;
+                    }
+                    else if (drawingShape is TriangleShape triangleShape && _draggingShape is Polygon triangle)
+                    {
+                        var deltaXTotal = newX - triangleShape.X;
+                        var deltaYTotal = newY - triangleShape.Y;
+
+                        for (int i = 0; i < triangleShape.Points.Count; i++)
+                        {
+                            var pt = triangleShape.Points[i];
+                            triangleShape.Points[i] = new Point(pt.X + deltaXTotal, pt.Y + deltaYTotal);
+                        }
+                        
+                        triangleShape.X = newX;
+                        triangleShape.Y = newY;
+                        
+                        var newPoints = new PointCollection();
+                        foreach (var pt in triangleShape.Points)
+                        {
+                            newPoints.Add(pt);
+                        }
+                        triangle.Points = newPoints;
+                    }
+                    else if (drawingShape is CircleShape circleShape && _draggingShape is Shape circle)
+                    {
+                        circleShape.X = newX;
+                        circleShape.Y = newY;
+                        Canvas.SetLeft(circle, newX);
+                        Canvas.SetTop(circle, newY);
                     }
                     else
                     {
@@ -859,6 +1083,41 @@ namespace Windows_22120278.Views
                         {
                             return;
                         }
+                    }
+                    else if (drawingShape is Windows_22120278.Models.TriangleShape triangleShape)
+                    {
+                        if (triangleShape.Points != null && triangleShape.Points.Count == 3)
+                        {
+                            for (int i = 0; i < triangleShape.Points.Count; i++)
+                            {
+                                var pt = triangleShape.Points[i];
+                                triangleShape.Points[i] = new Point(pt.X + deltaX, pt.Y + deltaY);
+                            }
+                            
+                            var minX = triangleShape.Points.Min(p => p.X);
+                            var minY = triangleShape.Points.Min(p => p.Y);
+                            var maxX = triangleShape.Points.Max(p => p.X);
+                            var maxY = triangleShape.Points.Max(p => p.Y);
+                            
+                            triangleShape.X = minX;
+                            triangleShape.Y = minY;
+                            triangleShape.Width = maxX - minX;
+                            triangleShape.Height = maxY - minY;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                    else if (drawingShape is Windows_22120278.Models.CircleShape circleShape)
+                    {
+                        circleShape.X = newX;
+                        circleShape.Y = newY;
+                        var size = Math.Max(circleShape.Width, circleShape.Height);
+                        if (size <= 0)
+                            size = 50;
+                        circleShape.Width = size;
+                        circleShape.Height = size;
                     }
                     else if (drawingShape is Windows_22120278.Models.LineShape lineShape)
                     {

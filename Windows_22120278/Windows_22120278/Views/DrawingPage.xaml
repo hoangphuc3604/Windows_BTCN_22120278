@@ -91,6 +91,37 @@
                                         <ToolTip Content="Polygon" />
                                     </ToolTipService.ToolTip>
                                 </Button>
+                                <Button Command="{Binding SelectToolCommand}"
+                                        CommandParameter="{x:Bind models:ShapeType.Circle, Mode=OneTime}"
+                                        Width="48"
+                                        Height="48"
+                                        CornerRadius="4"
+                                        Padding="8">
+                                    <Viewbox Width="32" Height="32" Stretch="Uniform">
+                                        <Ellipse Stroke="{ThemeResource TextFillColorPrimaryBrush}"
+                                                 StrokeThickness="2"
+                                                 Width="32"
+                                                 Height="32"
+                                                 HorizontalAlignment="Center"
+                                                 VerticalAlignment="Center" />
+                                    </Viewbox>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Circle" />
+                                    </ToolTipService.ToolTip>
+                                </Button>
+                                <Button Command="{Binding SelectToolCommand}"
+                                        CommandParameter="{x:Bind models:ShapeType.Triangle, Mode=OneTime}"
+                                        Width="48"
+                                        Height="48"
+                                        CornerRadius="4"
+                                        Padding="8">
+                                    <PathIcon Data="M 16,4 L 28,28 L 4,28 Z" 
+                                              HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"/>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Triangle" />
+                                    </ToolTipService.ToolTip>
+                                </Button>
                             </StackPanel>
                         </StackPanel>
                     </Border>

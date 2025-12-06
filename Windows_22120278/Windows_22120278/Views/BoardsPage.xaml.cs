@@ -211,6 +211,40 @@ namespace Windows_22120278.Views
                 Canvas.SetTop(ellipse, (drawingShape.Y * scale) + offsetY);
                 uiShape = ellipse;
             }
+            else if (drawingShape is CircleShape circleShape)
+            {
+                var size = Math.Max(circleShape.Width, circleShape.Height) * scale;
+                var ellipse = new Ellipse
+                {
+                    Stroke = drawingShape.Color,
+                    StrokeThickness = drawingShape.StrokeThickness * scale,
+                    Fill = null,
+                    Width = size,
+                    Height = size
+                };
+                Canvas.SetLeft(ellipse, (circleShape.X * scale) + offsetX);
+                Canvas.SetTop(ellipse, (circleShape.Y * scale) + offsetY);
+                uiShape = ellipse;
+            }
+            else if (drawingShape is TriangleShape triangleShape)
+            {
+                var triangle = new Polygon
+                {
+                    Stroke = drawingShape.Color,
+                    StrokeThickness = drawingShape.StrokeThickness * scale,
+                    Fill = null
+                };
+
+                var pointCollection = new PointCollection();
+                foreach (var pt in triangleShape.Points)
+                {
+                    pointCollection.Add(new Point(
+                        (pt.X * scale) + offsetX,
+                        (pt.Y * scale) + offsetY));
+                }
+                triangle.Points = pointCollection;
+                uiShape = triangle;
+            }
 
             if (uiShape != null)
             {

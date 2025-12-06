@@ -6,6 +6,8 @@ namespace Windows_22120278_Data.models
         Rectangle,
         Ellipse,
         Polygon,
+        Circle,
+        Triangle,
         Freehand
     }
 }

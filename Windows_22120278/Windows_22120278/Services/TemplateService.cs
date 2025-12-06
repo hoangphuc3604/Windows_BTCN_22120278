@@ -74,6 +74,26 @@ namespace Windows_22120278.Services
                 var pointsData = JsonSerializer.Serialize(polygonShape.Points.Select(p => new { X = p.X, Y = p.Y }));
                 template.PointsData = pointsData;
             }
+            else if (shape is CircleShape circleShape)
+            {
+                template.Type = ShapeType.Circle;
+                template.StartX = circleShape.X;
+                template.StartY = circleShape.Y;
+                var size = Math.Max(circleShape.Width, circleShape.Height);
+                template.EndX = circleShape.X + size;
+                template.EndY = circleShape.Y + size;
+            }
+            else if (shape is TriangleShape triangleShape)
+            {
+                template.Type = ShapeType.Triangle;
+                template.StartX = triangleShape.X;
+                template.StartY = triangleShape.Y;
+                template.EndX = triangleShape.X + triangleShape.Width;
+                template.EndY = triangleShape.Y + triangleShape.Height;
+
+                var pointsData = JsonSerializer.Serialize(triangleShape.Points.Select(p => new { X = p.X, Y = p.Y }));
+                template.PointsData = pointsData;
+            }
 
             _context.ShapeTemplates.Add(template);
             await _context.SaveChangesAsync();
@@ -124,6 +144,21 @@ namespace Windows_22120278.Services
                     Height = Math.Abs(template.EndY - template.StartY),
                     Points = ParsePointsData(template.PointsData)
                 },
+                ShapeType.Circle => new CircleShape
+                {
+                    X = template.StartX,
+                    Y = template.StartY,
+                    Width = Math.Abs(template.EndX - template.StartX),
+                    Height = Math.Abs(template.EndX - template.StartX)
+                },
+                ShapeType.Triangle => new TriangleShape
+                {
+                    X = template.StartX,
+                    Y = template.StartY,
+                    Width = Math.Abs(template.EndX - template.StartX),
+                    Height = Math.Abs(template.EndY - template.StartY),
+                    Points = ParsePointsData(template.PointsData)
+                },
                 _ => null
             };
 
@@ -133,6 +168,11 @@ namespace Windows_22120278.Services
                 shape.StrokeThickness = template.StrokeThickness;
                 
                 if (shape is PolygonShape polygonShape && (polygonShape.Points == null || polygonShape.Points.Count < 3))
+                {
+                    return null;
+                }
+                
+                if (shape is TriangleShape triangleShape && (triangleShape.Points == null || triangleShape.Points.Count != 3))
                 {
                     return null;
                 }

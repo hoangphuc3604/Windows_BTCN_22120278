@@ -70,10 +70,10 @@ namespace Windows_22120278.Views
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            if (e.Parameter is Windows_22120278_Data.models.Profile profile)
+            if (e.Parameter is Windows_22120278_Data.models.DrawingBoard board)
             {
-                _currentProfile = profile;
-                ViewModel.SetProfile(profile);
+                _currentProfile = board.Profile;
+                ViewModel.SetDrawingBoard(board);
                 await ViewModel.LoadDrawingCommand.ExecuteAsync(null);
                 await ViewModel.LoadTemplatesCommand.ExecuteAsync(null);
             }

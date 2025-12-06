@@ -109,6 +109,7 @@ namespace Windows_22120278.Services
         {
             var board = await _context.DrawingBoards
                 .Include(d => d.Shapes)
+                .Include(d => d.Profile)
                 .FirstOrDefaultAsync(d => d.Id == drawingBoardId);
 
             if (board == null)
@@ -131,8 +132,37 @@ namespace Windows_22120278.Services
         {
             return await _context.DrawingBoards
                 .Where(d => d.ProfileId == profileId)
+                .Include(d => d.Profile)
                 .OrderByDescending(d => d.CreatedDate)
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<List<DrawingBoard>> GetDrawingBoardsByProfileIdAsync(int profileId)
+        {
+            return await _context.DrawingBoards
+                .Where(d => d.ProfileId == profileId)
+                .Include(d => d.Profile)
+                .OrderByDescending(d => d.CreatedDate)
+                .ToListAsync();
+        }
+
+        public async Task<DrawingBoard> CreateDrawingBoardAsync(DrawingBoard board)
+        {
+            board.CreatedDate = DateTime.Now;
+            _context.DrawingBoards.Add(board);
+            await _context.SaveChangesAsync();
+            return board;
+        }
+
+        public async Task<bool> DeleteDrawingBoardAsync(int boardId)
+        {
+            var board = await _context.DrawingBoards.FindAsync(boardId);
+            if (board == null)
+                return false;
+
+            _context.DrawingBoards.Remove(board);
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         private DrawingShape? ConvertToDrawingShape(ShapeEntity shapeEntity)

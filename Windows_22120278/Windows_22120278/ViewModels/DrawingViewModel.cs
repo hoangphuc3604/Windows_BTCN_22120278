@@ -47,28 +47,24 @@ namespace Windows_22120278.ViewModels
             _templateService = templateService;
         }
 
-        public void SetProfile(Profile profile)
+        public void SetDrawingBoard(DrawingBoard board)
         {
-            _currentProfile = profile;
+            _currentDrawingBoard = board;
+            _currentProfile = board.Profile;
         }
 
         [RelayCommand]
         private async Task LoadDrawingAsync()
         {
-            if (_currentProfile == null)
+            if (_currentDrawingBoard == null)
                 return;
 
-            var latestBoard = await _drawingService.GetLatestDrawingBoardAsync(_currentProfile.Id);
-            if (latestBoard != null)
+            var (board, shapes) = await _drawingService.GetDrawingAsync(_currentDrawingBoard.Id);
+            
+            Shapes.Clear();
+            foreach (var shape in shapes)
             {
-                _currentDrawingBoard = latestBoard;
-                var (board, shapes) = await _drawingService.GetDrawingAsync(latestBoard.Id);
-                
-                Shapes.Clear();
-                foreach (var shape in shapes)
-                {
-                    Shapes.Add(shape);
-                }
+                Shapes.Add(shape);
             }
         }
 
@@ -81,23 +77,10 @@ namespace Windows_22120278.ViewModels
         [RelayCommand]
         private async Task SaveDrawing()
         {
-            if (_currentProfile == null)
+            if (_currentDrawingBoard == null)
                 return;
 
             var shapesList = Shapes.ToList();
-
-            if (_currentDrawingBoard == null)
-            {
-                _currentDrawingBoard = new DrawingBoard
-                {
-                    Name = $"Drawing {DateTime.Now:yyyy-MM-dd HH:mm:ss}",
-                    Width = 800,
-                    Height = 600,
-                    BackgroundColor = "#FFFFFF",
-                    ProfileId = _currentProfile.Id
-                };
-            }
-
             _currentDrawingBoard = await _drawingService.SaveDrawingAsync(_currentDrawingBoard, shapesList);
         }
 

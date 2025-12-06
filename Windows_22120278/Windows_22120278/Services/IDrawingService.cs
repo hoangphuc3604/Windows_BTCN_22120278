@@ -10,6 +10,9 @@ namespace Windows_22120278.Services
         Task<DrawingBoard> SaveDrawingAsync(DrawingBoard drawingBoard, List<DrawingShape> shapes);
         Task<(DrawingBoard? board, List<DrawingShape> shapes)> GetDrawingAsync(int drawingBoardId);
         Task<DrawingBoard?> GetLatestDrawingBoardAsync(int profileId);
+        Task<List<DrawingBoard>> GetDrawingBoardsByProfileIdAsync(int profileId);
+        Task<DrawingBoard> CreateDrawingBoardAsync(DrawingBoard board);
+        Task<bool> DeleteDrawingBoardAsync(int boardId);
     }
 }
 

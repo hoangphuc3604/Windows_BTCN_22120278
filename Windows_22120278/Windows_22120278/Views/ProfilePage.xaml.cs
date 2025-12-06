@@ -24,7 +24,7 @@ namespace Windows_22120278.Views
             await ViewModel.LoadProfilesCommand.ExecuteAsync(null);
         }
 
-        private void OpenDrawingButton_Click(object sender, RoutedEventArgs e)
+        private void ManageBoardsButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is Profile profile)
             {
@@ -35,7 +35,7 @@ namespace Windows_22120278.Views
                 var frame = this.Frame;
                 if (frame != null)
                 {
-                    frame.Navigate(typeof(DrawingPage), profile);
+                    frame.Navigate(typeof(BoardsPage), profile);
                 }
             }
         }

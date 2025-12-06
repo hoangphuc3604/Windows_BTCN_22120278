@@ -61,10 +61,11 @@ namespace Windows_22120278
             services.AddTransient<IProfileService, ProfileService>();
             services.AddTransient<IDrawingService, DrawingService>();
             services.AddTransient<ITemplateService, TemplateService>();
-            services.AddTransient<INavigationService, NavigationService>();
+            services.AddSingleton<INavigationService, NavigationService>();
             services.AddSingleton<ISelectedProfileService, SelectedProfileService>();
             services.AddTransient<ProfileViewModel>();
             services.AddTransient<DrawingViewModel>();
+            services.AddTransient<BoardsViewModel>();
             services.AddTransient<DashboardViewModel>();
             services.AddTransient<MainWindow>();
 

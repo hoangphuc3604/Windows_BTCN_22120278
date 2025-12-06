@@ -30,6 +30,9 @@ namespace Windows_22120278.ViewModels
         [ObservableProperty]
         private ObservableCollection<DrawingShape> shapes = new();
 
+        [ObservableProperty]
+        private DrawingShape? selectedShape;
+
         private Profile? _currentProfile;
         private DrawingBoard? _currentDrawingBoard;
 
@@ -97,6 +100,17 @@ namespace Windows_22120278.ViewModels
         private void ClearCanvas()
         {
             Shapes.Clear();
+            SelectedShape = null;
+        }
+
+        [RelayCommand]
+        private void DeleteSelectedShape()
+        {
+            if (SelectedShape != null && Shapes.Contains(SelectedShape))
+            {
+                Shapes.Remove(SelectedShape);
+                SelectedShape = null;
+            }
         }
     }
 }

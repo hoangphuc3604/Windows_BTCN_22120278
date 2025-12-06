@@ -8,15 +8,23 @@
     <Grid Padding="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Horizontal" Spacing="12">
+        <!-- Breadcrumbs -->
+        <BreadcrumbBar Grid.Row="0"
+                       Margin="0,0,0,12"
+                       ItemsSource="{x:Bind BreadcrumbItems, Mode=OneWay}" />
+
+        <!-- Total boards -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12">
             <TextBlock Text="Total Boards:" VerticalAlignment="Center" />
             <TextBlock Text="{Binding TotalBoards, Mode=OneWay}" VerticalAlignment="Center" FontWeight="Bold" />
         </StackPanel>
 
-        <lvc:PieChart Grid.Row="1"
+        <!-- Pie chart -->
+        <lvc:PieChart Grid.Row="2"
                       Series="{Binding ShapeDistribution}"
                       LegendPosition="Right">
         </lvc:PieChart>

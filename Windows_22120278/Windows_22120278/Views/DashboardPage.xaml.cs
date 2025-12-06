@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -8,6 +9,7 @@ namespace Windows_22120278.Views
     public sealed partial class DashboardPage : Page
     {
         public DashboardViewModel ViewModel { get; }
+        public List<string> BreadcrumbItems { get; } = new() { "Home", "Dashboard" };
 
         public DashboardPage()
         {

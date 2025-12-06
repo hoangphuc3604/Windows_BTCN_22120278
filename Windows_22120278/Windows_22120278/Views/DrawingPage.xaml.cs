@@ -31,6 +31,7 @@ namespace Windows_22120278.Views
         private bool _isDrawingPolygon = false;
 
         private Windows_22120278_Data.models.Profile? _currentProfile;
+        private Dictionary<UIElement, DrawingShape> _shapeMapping = new();
 
         public DrawingPage()
         {
@@ -107,6 +108,12 @@ namespace Windows_22120278.Views
 
         private void DrawingCanvas_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            var source = e.OriginalSource as UIElement;
+            if (source != null && source != DrawingCanvas && _shapeMapping.ContainsKey(source))
+            {
+                return;
+            }
+
             if (ViewModel.CurrentShapeType == ShapeType.Polygon)
             {
                 HandlePolygonClick(e);
@@ -391,6 +398,10 @@ namespace Windows_22120278.Views
             }
             foreach (var shape in shapesToRemove)
             {
+                if (_shapeMapping.ContainsKey(shape))
+                {
+                    _shapeMapping.Remove(shape);
+                }
                 DrawingCanvas.Children.Remove(shape);
             }
 
@@ -399,6 +410,9 @@ namespace Windows_22120278.Views
                 var uiShape = CreateUIShapeFromDrawingShape(drawingShape);
                 if (uiShape != null)
                 {
+                    uiShape.IsHitTestVisible = true;
+                    uiShape.PointerPressed += Shape_PointerPressed;
+                    _shapeMapping[uiShape] = drawingShape;
                     DrawingCanvas.Children.Add(uiShape);
                 }
             }
@@ -457,6 +471,15 @@ namespace Windows_22120278.Views
             }
 
             return uiShape;
+        }
+
+        private void Shape_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is UIElement uiElement && _shapeMapping.TryGetValue(uiElement, out var drawingShape))
+            {
+                ViewModel.SelectedShape = drawingShape;
+                e.Handled = true;
+            }
         }
     }
 }

@@ -19,14 +19,8 @@ using Windows.Graphics;
 using WinRT.Interop;
 using Windows_22120278.Views;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Windows_22120278
 {
-    /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class MainWindow : Window
     {
         private AppWindow? _appWindow;
@@ -46,7 +40,16 @@ namespace Windows_22120278
             }
 
             NavView.SelectionChanged += NavView_SelectionChanged;
+            ContentFrame.Navigated += ContentFrame_Navigated;
             ContentFrame.Navigate(typeof(ProfilePage));
+        }
+
+        private void ContentFrame_Navigated(object sender, NavigationEventArgs e)
+        {
+            if (e.SourcePageType == typeof(ProfilePage))
+            {
+                NavView.SelectedItem = NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag?.ToString() == "Profiles");
+            }
         }
 
         private AppWindow? GetAppWindowForCurrentWindow()

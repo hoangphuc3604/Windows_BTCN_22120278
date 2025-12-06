@@ -7,48 +7,162 @@
     xmlns:models="using:Windows_22120278_Data.models">
 
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-        <!-- Toolbar Column -->
-        <StackPanel Grid.Column="0" Spacing="8" Padding="12" Background="LightGray">
-            <TextBlock Text="Tools" FontWeight="SemiBold" Margin="0,0,0,8" />
+        <!-- Toolbar Row -->
+        <Border Grid.Row="0" 
+                Background="LightGray"
+                Padding="8,6"
+                BorderThickness="0,0,0,1"
+                BorderBrush="DarkGray"
+                MaxHeight="120">
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                         HorizontalScrollBarVisibility="Auto"
+                         ZoomMode="Disabled">
+                <StackPanel Orientation="Horizontal" MinHeight="80">
+                    <!-- Shapes Group -->
+                    <Border BorderBrush="DarkGray" 
+                           BorderThickness="0,0,1,0"
+                           Padding="8,4"
+                           Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Text="Shapes" 
+                                      FontSize="11"
+                                      FontWeight="SemiBold"
+                                      HorizontalAlignment="Center"
+                                      Margin="0,0,0,4" />
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Line"
+                                        Command="{Binding SelectToolCommand}"
+                                        CommandParameter="{x:Bind models:ShapeType.Line, Mode=OneTime}"
+                                        Width="60"
+                                        Height="32"
+                                        Margin="2,0" />
+                                <Button Content="Rect"
+                                        Command="{Binding SelectToolCommand}"
+                                        CommandParameter="{x:Bind models:ShapeType.Rectangle, Mode=OneTime}"
+                                        Width="60"
+                                        Height="32"
+                                        Margin="2,0" />
+                                <Button Content="Ellipse"
+                                        Command="{Binding SelectToolCommand}"
+                                        CommandParameter="{x:Bind models:ShapeType.Ellipse, Mode=OneTime}"
+                                        Width="60"
+                                        Height="32"
+                                        Margin="2,0" />
+                                <Button Content="Polygon"
+                                        Command="{Binding SelectToolCommand}"
+                                        CommandParameter="{x:Bind models:ShapeType.Polygon, Mode=OneTime}"
+                                        Width="60"
+                                        Height="32"
+                                        Margin="2,0" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
 
-            <!-- Shape Buttons -->
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Content="Line"
-                        Command="{Binding SelectToolCommand}"
-                        CommandParameter="{x:Bind models:ShapeType.Line, Mode=OneTime}" />
-                <Button Content="Rect"
-                        Command="{Binding SelectToolCommand}"
-                        CommandParameter="{x:Bind models:ShapeType.Rectangle, Mode=OneTime}" />
-                <Button Content="Ellipse"
-                        Command="{Binding SelectToolCommand}"
-                        CommandParameter="{x:Bind models:ShapeType.Ellipse, Mode=OneTime}" />
-                <Button Content="Polygon"
-                        Command="{Binding SelectToolCommand}"
-                        CommandParameter="{x:Bind models:ShapeType.Polygon, Mode=OneTime}" />
-            </StackPanel>
+                    <!-- Color Group -->
+                    <Border BorderBrush="DarkGray" 
+                           BorderThickness="0,0,1,0"
+                           Padding="8,4"
+                           Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Text="Color" 
+                                      FontSize="11"
+                                      FontWeight="SemiBold"
+                                      HorizontalAlignment="Center"
+                                      Margin="0,0,0,4" />
+                            <Button x:Name="ColorPickerButton"
+                                    Width="80"
+                                    Height="32"
+                                    HorizontalAlignment="Center">
+                                <Button.Flyout>
+                                    <Flyout Placement="Bottom">
+                                        <ColorPicker x:Name="ColorPickerControl"
+                                                    ColorChanged="ColorPicker_ColorChanged"
+                                                    IsAlphaEnabled="False"
+                                                    IsColorSpectrumVisible="True"
+                                                    IsColorChannelTextInputVisible="True"
+                                                    IsHexInputVisible="True"
+                                                    IsMoreButtonVisible="True"
+                                                    Width="300" />
+                                    </Flyout>
+                                </Button.Flyout>
+                                <Border x:Name="ColorPreviewBorder"
+                                       Background="Black"
+                                       BorderBrush="Black"
+                                       BorderThickness="1"
+                                       CornerRadius="2" />
+                            </Button>
+                        </StackPanel>
+                    </Border>
 
-            <!-- Color Picker -->
-            <TextBlock Text="Color" Margin="0,8,0,0" />
-            <ColorPicker Color="{Binding CurrentColor, Mode=TwoWay}" />
+                    <!-- Stroke Group -->
+                    <Border BorderBrush="DarkGray" 
+                           BorderThickness="0,0,1,0"
+                           Padding="8,4"
+                           Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Text="Stroke" 
+                                      FontSize="11"
+                                      FontWeight="SemiBold"
+                                      HorizontalAlignment="Center"
+                                      Margin="0,0,0,4" />
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Slider Minimum="1" 
+                                       Maximum="20" 
+                                       Value="{Binding CurrentStrokeSize, Mode=TwoWay}"
+                                       Width="80"
+                                       VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding CurrentStrokeSize, Mode=OneWay}"
+                                          Width="25"
+                                          TextAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Margin="4,0,0,0"
+                                          FontSize="11" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
 
-            <!-- Stroke Thickness Slider -->
-            <TextBlock Text="Stroke" Margin="0,8,0,0" />
-            <Slider Minimum="1" Maximum="20" Value="{Binding CurrentStrokeSize, Mode=TwoWay}" />
+                    <!-- Actions Group -->
+                    <Border Padding="8,4"
+                           Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Text="Actions" 
+                                      FontSize="11"
+                                      FontWeight="SemiBold"
+                                      HorizontalAlignment="Center"
+                                      Margin="0,0,0,4" />
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Save"
+                                        Command="{Binding SaveDrawingCommand}"
+                                        Style="{StaticResource AccentButtonStyle}"
+                                        Width="70"
+                                        Height="32"
+                                        Margin="2,0" />
+                                <Button Content="Clear"
+                                        Command="{Binding ClearCanvasCommand}"
+                                        Style="{StaticResource DefaultButtonStyle}"
+                                        Width="70"
+                                        Height="32"
+                                        Margin="2,0" />
+                                <Button Content="Back"
+                                        Click="BackButton_Click"
+                                        Style="{StaticResource DefaultButtonStyle}"
+                                        Width="70"
+                                        Height="32"
+                                        Margin="2,0" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
 
-            <!-- Action Buttons -->
-            <Button Content="Clear Canvas"
-                    Command="{Binding ClearCanvasCommand}"
-                    Margin="0,16,0,0"
-                    Style="{StaticResource DefaultButtonStyle}" />
-        </StackPanel>
-
-        <!-- Drawing Area Column -->
-        <ScrollViewer Grid.Column="1">
+        <!-- Drawing Area Row -->
+        <ScrollViewer Grid.Row="1">
             <Canvas x:Name="DrawingCanvas" 
                     Background="White"
                     PointerPressed="DrawingCanvas_PointerPressed"

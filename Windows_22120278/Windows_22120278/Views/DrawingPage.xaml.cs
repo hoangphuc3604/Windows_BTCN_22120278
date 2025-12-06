@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -38,21 +39,64 @@ namespace Windows_22120278.Views
 
             ViewModel.Shapes.CollectionChanged += Shapes_CollectionChanged;
             this.Unloaded += DrawingPage_Unloaded;
+            this.Loaded += DrawingPage_Loaded;
             RenderAllShapes();
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        private void DrawingPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            UpdateColorPreview();
+            if (ColorPickerControl != null)
+            {
+                var winColor = Windows.UI.Color.FromArgb(
+                    ViewModel.CurrentColor.A,
+                    ViewModel.CurrentColor.R,
+                    ViewModel.CurrentColor.G,
+                    ViewModel.CurrentColor.B);
+                ColorPickerControl.Color = winColor;
+            }
+        }
+
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
             if (e.Parameter is Windows_22120278_Data.models.Profile profile)
             {
                 _currentProfile = profile;
+                ViewModel.SetProfile(profile);
+                await ViewModel.LoadDrawingCommand.ExecuteAsync(null);
             }
         }
 
         private void DrawingPage_Unloaded(object sender, RoutedEventArgs e)
         {
             ViewModel.Shapes.CollectionChanged -= Shapes_CollectionChanged;
+        }
+
+        private void ColorPicker_ColorChanged(ColorPicker sender, ColorChangedEventArgs args)
+        {
+            ViewModel.CurrentColor = args.NewColor;
+            UpdateColorPreview();
+        }
+
+        private void UpdateColorPreview()
+        {
+            if (ColorPreviewBorder != null)
+            {
+                ColorPreviewBorder.Background = new SolidColorBrush(ViewModel.CurrentColor);
+            }
+        }
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.Frame != null && this.Frame.CanGoBack)
+            {
+                this.Frame.GoBack();
+            }
+            else
+            {
+                this.Frame?.Navigate(typeof(ProfilePage));
+            }
         }
 
         private void DrawingCanvas_PointerPressed(object sender, PointerRoutedEventArgs e)

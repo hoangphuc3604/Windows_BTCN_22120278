@@ -28,6 +28,10 @@ namespace Windows_22120278.Views
         {
             if (sender is Button button && button.Tag is Profile profile)
             {
+                // Set selected profile in service
+                var selectedProfileService = App.Services.GetRequiredService<Windows_22120278.Services.ISelectedProfileService>();
+                selectedProfileService.SelectedProfile = profile;
+                
                 var frame = this.Frame;
                 if (frame != null)
                 {

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -17,17 +18,22 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Graphics;
 using WinRT.Interop;
+using Windows_22120278.Services;
 using Windows_22120278.Views;
+using Windows_22120278_Data.models;
 
 namespace Windows_22120278
 {
     public sealed partial class MainWindow : Window
     {
         private AppWindow? _appWindow;
+        private readonly ISelectedProfileService _selectedProfileService;
 
         public MainWindow()
         {
             InitializeComponent();
+            
+            _selectedProfileService = App.Services.GetRequiredService<ISelectedProfileService>();
             
             _appWindow = GetAppWindowForCurrentWindow();
             if (_appWindow != null)
@@ -39,9 +45,23 @@ namespace Windows_22120278
                 NavView.PaneTitle = "Windows_22120278";
             }
 
+            // Initialize NavigationService with Frame
+            var navigationService = App.Services.GetRequiredService<INavigationService>();
+            navigationService.SetFrame(ContentFrame);
+
             NavView.SelectionChanged += NavView_SelectionChanged;
             ContentFrame.Navigated += ContentFrame_Navigated;
+            _selectedProfileService.SelectedProfileChanged += SelectedProfileService_SelectedProfileChanged;
+            
             ContentFrame.Navigate(typeof(ProfilePage));
+            
+            // Initially disable Dashboard since no profile is selected
+            UpdateNavigationItemsEnabledState();
+        }
+
+        private void SelectedProfileService_SelectedProfileChanged(object? sender, Profile? profile)
+        {
+            UpdateNavigationItemsEnabledState();
         }
 
         private void ContentFrame_Navigated(object sender, NavigationEventArgs e)
@@ -53,6 +73,24 @@ namespace Windows_22120278
             else if (e.SourcePageType == typeof(DashboardPage))
             {
                 NavView.SelectedItem = NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag?.ToString() == "Dashboard");
+            }
+            else if (e.SourcePageType == typeof(DrawingPage))
+            {
+                // When navigating to DrawingPage, a profile should be passed
+                if (e.Parameter is Profile profile)
+                {
+                    _selectedProfileService.SelectedProfile = profile;
+                }
+            }
+        }
+
+        private void UpdateNavigationItemsEnabledState()
+        {
+            // Enable/Disable Dashboard based on whether a profile is selected
+            var dashboardItem = NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag?.ToString() == "Dashboard");
+            if (dashboardItem != null)
+            {
+                dashboardItem.IsEnabled = _selectedProfileService.SelectedProfile != null;
             }
         }
 
@@ -73,7 +111,10 @@ namespace Windows_22120278
                         ContentFrame.Navigate(typeof(ProfilePage));
                         break;
                     case "Dashboard":
-                        ContentFrame.Navigate(typeof(DashboardPage));
+                        if (_selectedProfileService.SelectedProfile != null)
+                        {
+                            ContentFrame.Navigate(typeof(DashboardPage));
+                        }
                         break;
                 }
             }

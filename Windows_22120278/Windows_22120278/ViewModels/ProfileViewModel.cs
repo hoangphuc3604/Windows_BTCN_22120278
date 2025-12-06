@@ -11,25 +11,34 @@ namespace Windows_22120278.ViewModels
     public partial class ProfileViewModel : ObservableObject
     {
         private readonly IProfileService _profileService;
+        private readonly ISelectedProfileService _selectedProfileService;
 
         [ObservableProperty]
         private ObservableCollection<Profile> profiles = new();
 
-        public ProfileViewModel(IProfileService profileService)
+        public ProfileViewModel(IProfileService profileService, ISelectedProfileService selectedProfileService)
         {
             _profileService = profileService;
+            _selectedProfileService = selectedProfileService;
         }
 
         [RelayCommand]
         private async Task LoadProfilesAsync()
         {
             try
-        {
+            {
             var profilesList = await _profileService.GetProfilesAsync();
             Profiles.Clear();
             foreach (var profile in profilesList)
             {
                 Profiles.Add(profile);
+                }
+                
+                // If there are profiles and no profile is currently selected, 
+                // automatically select the first profile to enable Dashboard
+                if (profilesList.Count > 0 && _selectedProfileService.SelectedProfile == null)
+                {
+                    _selectedProfileService.SelectedProfile = profilesList[0];
                 }
             }
             catch (Exception ex)
@@ -56,6 +65,8 @@ namespace Windows_22120278.ViewModels
                 if (addedProfile != null)
                 {
             Profiles.Add(addedProfile);
+                    // Set the newly created profile as selected to enable navigation buttons
+                    _selectedProfileService.SelectedProfile = addedProfile;
                 }
             }
             catch (Exception ex)
@@ -73,6 +84,21 @@ namespace Windows_22120278.ViewModels
             {
                 await _profileService.DeleteProfileAsync(profile.Id);
                 Profiles.Remove(profile);
+                
+                // If the deleted profile was the selected one, select another profile or clear selection
+                if (_selectedProfileService.SelectedProfile?.Id == profile.Id)
+                {
+                    if (Profiles.Count > 0)
+                    {
+                        // Select the first remaining profile
+                        _selectedProfileService.SelectedProfile = Profiles[0];
+                    }
+                    else
+                    {
+                        // No profiles left, clear selection
+                        _selectedProfileService.SelectedProfile = null;
+                    }
+                }
             }
         }
     }

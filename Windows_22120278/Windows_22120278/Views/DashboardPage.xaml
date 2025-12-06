@@ -14,8 +14,10 @@
 
         <!-- Breadcrumbs -->
         <BreadcrumbBar Grid.Row="0"
+                       x:Name="BreadcrumbBarControl"
                        Margin="0,0,0,12"
-                       ItemsSource="{x:Bind BreadcrumbItems, Mode=OneWay}" />
+                       ItemsSource="{x:Bind BreadcrumbItems, Mode=OneWay}"
+                       ItemClicked="BreadcrumbBar_ItemClicked" />
 
         <!-- Total boards -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12">

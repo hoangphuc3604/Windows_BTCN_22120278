@@ -32,6 +32,7 @@ namespace Windows_22120278.Views
 
         private Windows_22120278_Data.models.Profile? _currentProfile;
         private Dictionary<UIElement, DrawingShape> _shapeMapping = new();
+        private DrawingShape? _previousSelectedShape;
 
         public DrawingPage()
         {
@@ -40,6 +41,7 @@ namespace Windows_22120278.Views
             DataContext = ViewModel;
 
             ViewModel.Shapes.CollectionChanged += Shapes_CollectionChanged;
+            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             this.Unloaded += DrawingPage_Unloaded;
             this.Loaded += DrawingPage_Loaded;
             RenderAllShapes();
@@ -48,6 +50,7 @@ namespace Windows_22120278.Views
         private void DrawingPage_Loaded(object sender, RoutedEventArgs e)
         {
             UpdateColorPreview();
+            UpdatePropertiesPanelVisibility();
             if (ColorPickerControl != null)
             {
                 var winColor = Windows.UI.Color.FromArgb(
@@ -73,6 +76,75 @@ namespace Windows_22120278.Views
         private void DrawingPage_Unloaded(object sender, RoutedEventArgs e)
         {
             ViewModel.Shapes.CollectionChanged -= Shapes_CollectionChanged;
+            ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            if (_previousSelectedShape != null)
+            {
+                _previousSelectedShape.PropertyChanged -= SelectedShape_PropertyChanged;
+                _previousSelectedShape = null;
+            }
+        }
+
+        private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ViewModel.SelectedShape))
+            {
+                if (_previousSelectedShape != null)
+                {
+                    _previousSelectedShape.PropertyChanged -= SelectedShape_PropertyChanged;
+                }
+
+                if (ViewModel.SelectedShape != null)
+                {
+                    ViewModel.SelectedShape.PropertyChanged += SelectedShape_PropertyChanged;
+                }
+
+                _previousSelectedShape = ViewModel.SelectedShape;
+                UpdatePropertiesPanelVisibility();
+                UpdateShapeColorPreview();
+            }
+        }
+
+        private void SelectedShape_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(DrawingShape.Width) || 
+                e.PropertyName == nameof(DrawingShape.Height) || 
+                e.PropertyName == nameof(DrawingShape.StrokeThickness) ||
+                e.PropertyName == nameof(DrawingShape.Color))
+            {
+                RenderAllShapes();
+            }
+        }
+
+        private void UpdatePropertiesPanelVisibility()
+        {
+            if (PropertiesPanel != null)
+            {
+                PropertiesPanel.Visibility = ViewModel.SelectedShape != null 
+                    ? Microsoft.UI.Xaml.Visibility.Visible 
+                    : Microsoft.UI.Xaml.Visibility.Collapsed;
+            }
+        }
+
+        private void UpdateShapeColorPreview()
+        {
+            if (ShapeColorPreviewBorder != null && ViewModel.SelectedShape != null)
+            {
+                var color = ViewModel.SelectedShape.Color;
+                if (color != null)
+                {
+                    ShapeColorPreviewBorder.Background = color;
+                    
+                    if (ShapeColorPickerControl != null)
+                    {
+                        var winColor = Windows.UI.Color.FromArgb(
+                            color.Color.A,
+                            color.Color.R,
+                            color.Color.G,
+                            color.Color.B);
+                        ShapeColorPickerControl.Color = winColor;
+                    }
+                }
+            }
         }
 
         private void ColorPicker_ColorChanged(ColorPicker sender, ColorChangedEventArgs args)
@@ -479,6 +551,23 @@ namespace Windows_22120278.Views
             {
                 ViewModel.SelectedShape = drawingShape;
                 e.Handled = true;
+            }
+        }
+
+        private void ShapeColorPicker_ColorChanged(ColorPicker sender, ColorChangedEventArgs args)
+        {
+            if (ViewModel.SelectedShape != null)
+            {
+                var newColor = Windows.UI.Color.FromArgb(
+                    args.NewColor.A,
+                    args.NewColor.R,
+                    args.NewColor.G,
+                    args.NewColor.B);
+                
+                var colorBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(newColor);
+                ViewModel.SelectedShape.Color = colorBrush;
+                UpdateShapeColorPreview();
+                RenderAllShapes();
             }
         }
     }

@@ -183,14 +183,133 @@
         </Border>
 
         <!-- Drawing Area Row -->
-        <ScrollViewer Grid.Row="1">
-            <Canvas x:Name="DrawingCanvas" 
-                    Background="White"
-                    PointerPressed="DrawingCanvas_PointerPressed"
-                    PointerMoved="DrawingCanvas_PointerMoved"
-                    PointerReleased="DrawingCanvas_PointerReleased"
-                    PointerCanceled="DrawingCanvas_PointerReleased"
-                    DoubleTapped="DrawingCanvas_DoubleTapped" />
-        </ScrollViewer>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer Grid.Column="0">
+                <Canvas x:Name="DrawingCanvas" 
+                        Background="White"
+                        PointerPressed="DrawingCanvas_PointerPressed"
+                        PointerMoved="DrawingCanvas_PointerMoved"
+                        PointerReleased="DrawingCanvas_PointerReleased"
+                        PointerCanceled="DrawingCanvas_PointerReleased"
+                        DoubleTapped="DrawingCanvas_DoubleTapped" />
+            </ScrollViewer>
+
+            <!-- Properties Panel -->
+            <StackPanel x:Name="PropertiesPanel"
+                       Grid.Column="1"
+                       Width="250"
+                       Background="LightGray"
+                       BorderBrush="DarkGray"
+                       BorderThickness="1,0,0,0"
+                       Padding="12"
+                       Visibility="Collapsed">
+                <TextBlock Text="Properties"
+                          FontSize="14"
+                          FontWeight="Bold"
+                          Margin="0,0,0,12" />
+
+                <!-- Color -->
+                <TextBlock Text="Color"
+                          FontSize="11"
+                          FontWeight="SemiBold"
+                          Margin="0,0,0,4" />
+                <Button x:Name="ShapeColorPickerButton"
+                        Width="200"
+                        Height="32"
+                        Margin="0,0,0,12"
+                        Padding="0">
+                    <Button.Flyout>
+                        <Flyout Placement="Left">
+                            <ColorPicker x:Name="ShapeColorPickerControl"
+                                        ColorChanged="ShapeColorPicker_ColorChanged"
+                                        IsAlphaEnabled="False"
+                                        IsColorSpectrumVisible="True"
+                                        IsColorChannelTextInputVisible="True"
+                                        IsHexInputVisible="True"
+                                        IsMoreButtonVisible="True"
+                                        Width="300" />
+                        </Flyout>
+                    </Button.Flyout>
+                    <Border x:Name="ShapeColorPreviewBorder"
+                           Background="Black"
+                           BorderBrush="DarkGray"
+                           BorderThickness="1.5"
+                           CornerRadius="12"
+                           Width="24"
+                           Height="24"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
+                </Button>
+
+                <!-- Width -->
+                <TextBlock Text="Width"
+                          FontSize="11"
+                          FontWeight="SemiBold"
+                          Margin="0,0,0,4" />
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <Slider Minimum="1"
+                           Maximum="1000"
+                           Value="{Binding SelectedShape.Width, Mode=TwoWay}"
+                           Width="150"
+                           VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding SelectedShape.Width, Mode=OneWay}"
+                              Width="40"
+                              TextAlignment="Center"
+                              VerticalAlignment="Center"
+                              Margin="8,0,0,0"
+                              FontSize="11" />
+                </StackPanel>
+
+                <!-- Height -->
+                <TextBlock Text="Height"
+                          FontSize="11"
+                          FontWeight="SemiBold"
+                          Margin="0,0,0,4" />
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <Slider Minimum="1"
+                           Maximum="1000"
+                           Value="{Binding SelectedShape.Height, Mode=TwoWay}"
+                           Width="150"
+                           VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding SelectedShape.Height, Mode=OneWay}"
+                              Width="40"
+                              TextAlignment="Center"
+                              VerticalAlignment="Center"
+                              Margin="8,0,0,0"
+                              FontSize="11" />
+                </StackPanel>
+
+                <!-- Stroke Thickness -->
+                <TextBlock Text="Stroke Thickness"
+                          FontSize="11"
+                          FontWeight="SemiBold"
+                          Margin="0,0,0,4" />
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <Slider Minimum="1"
+                           Maximum="20"
+                           Value="{Binding SelectedShape.StrokeThickness, Mode=TwoWay}"
+                           Width="150"
+                           VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding SelectedShape.StrokeThickness, Mode=OneWay}"
+                              Width="40"
+                              TextAlignment="Center"
+                              VerticalAlignment="Center"
+                              Margin="8,0,0,0"
+                              FontSize="11" />
+                </StackPanel>
+
+                <!-- Delete Button -->
+                <Button Content="Delete Shape"
+                        Command="{Binding DeleteSelectedShapeCommand}"
+                        Style="{StaticResource AccentButtonStyle}"
+                        HorizontalAlignment="Stretch"
+                        Margin="0,8,0,0" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>

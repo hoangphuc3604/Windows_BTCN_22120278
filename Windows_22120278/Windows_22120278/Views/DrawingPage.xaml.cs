@@ -37,6 +37,7 @@ namespace Windows_22120278.Views
         private Point _dragStartPoint;
         private Point _shapeStartPosition;
         private bool _isDragging = false;
+        private UIElement? _selectedUIElement;
 
         public DrawingPage()
         {
@@ -97,8 +98,18 @@ namespace Windows_22120278.Views
                     _previousSelectedShape.PropertyChanged -= SelectedShape_PropertyChanged;
                 }
 
+                // Find and store the UI element for the selected shape
+                _selectedUIElement = null;
                 if (ViewModel.SelectedShape != null)
                 {
+                    foreach (var kvp in _shapeMapping)
+                    {
+                        if (kvp.Value == ViewModel.SelectedShape)
+                        {
+                            _selectedUIElement = kvp.Key;
+                            break;
+                        }
+                    }
                     ViewModel.SelectedShape.PropertyChanged += SelectedShape_PropertyChanged;
                 }
 
@@ -110,8 +121,101 @@ namespace Windows_22120278.Views
 
         private void SelectedShape_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (_isDragging) return;
+            // Don't update UI while dragging (position changes)
+            if (_isDragging && (e.PropertyName == nameof(DrawingShape.X) || e.PropertyName == nameof(DrawingShape.Y)))
+            {
+                return;
+            }
 
+            if (sender is DrawingShape drawingShape && drawingShape == ViewModel.SelectedShape)
+            {
+                // Use the stored UI element reference, or find it if not stored
+                UIElement? uiElement = _selectedUIElement;
+                
+                // Validate the stored reference
+                if (uiElement == null || !_shapeMapping.ContainsKey(uiElement) || _shapeMapping[uiElement] != drawingShape)
+                {
+                    // Try to find it in the mapping
+                    foreach (var kvp in _shapeMapping)
+                    {
+                        if (kvp.Value == drawingShape)
+                        {
+                            uiElement = kvp.Key;
+                            _selectedUIElement = uiElement; // Update stored reference
+                            break;
+                        }
+                    }
+                }
+
+                if (uiElement != null)
+                {
+                    // Update only the specific property that changed
+                    if (e.PropertyName == nameof(DrawingShape.StrokeThickness) && uiElement is Shape shape)
+                    {
+                        shape.StrokeThickness = drawingShape.StrokeThickness;
+                        return;
+                    }
+                    else if (e.PropertyName == nameof(DrawingShape.Color) && uiElement is Shape shapeColor)
+                    {
+                        shapeColor.Stroke = drawingShape.Color;
+                        return;
+                    }
+                    else if (e.PropertyName == nameof(DrawingShape.Width) || e.PropertyName == nameof(DrawingShape.Height))
+                    {
+                        if (drawingShape is LineShape lineShape && uiElement is Line line)
+                        {
+                            line.X1 = lineShape.X;
+                            line.Y1 = lineShape.Y;
+                            line.X2 = lineShape.X + lineShape.Width;
+                            line.Y2 = lineShape.Y + lineShape.Height;
+                        }
+                        else if (drawingShape is PolygonShape polygonShape && uiElement is Polygon polygon)
+                        {
+                            // For polygon, width/height changes might affect points, so update all
+                            var newPoints = new PointCollection();
+                            foreach (var pt in polygonShape.Points)
+                            {
+                                newPoints.Add(pt);
+                            }
+                            polygon.Points = newPoints;
+                        }
+                        else if (uiElement is Shape shapeSize)
+                        {
+                            shapeSize.Width = drawingShape.Width;
+                            shapeSize.Height = drawingShape.Height;
+                        }
+                        return;
+                    }
+                    else if (e.PropertyName == nameof(DrawingShape.X) || e.PropertyName == nameof(DrawingShape.Y))
+                    {
+                        if (drawingShape is LineShape lineShape && uiElement is Line line)
+                        {
+                            line.X1 = lineShape.X;
+                            line.Y1 = lineShape.Y;
+                            line.X2 = lineShape.X + lineShape.Width;
+                            line.Y2 = lineShape.Y + lineShape.Height;
+                        }
+                        else if (drawingShape is PolygonShape polygonShape && uiElement is Polygon polygon)
+                        {
+                            // For polygon, we need to update all points
+                            var newPoints = new PointCollection();
+                            foreach (var pt in polygonShape.Points)
+                            {
+                                newPoints.Add(pt);
+                            }
+                            polygon.Points = newPoints;
+                        }
+                        else
+                        {
+                            Canvas.SetLeft(uiElement, drawingShape.X);
+                            Canvas.SetTop(uiElement, drawingShape.Y);
+                        }
+                        return;
+                    }
+                }
+            }
+
+            // Fallback: re-render all shapes if we can't find the specific shape
             if (e.PropertyName == nameof(DrawingShape.Width) || 
                 e.PropertyName == nameof(DrawingShape.Height) || 
                 e.PropertyName == nameof(DrawingShape.StrokeThickness) ||
@@ -120,6 +224,18 @@ namespace Windows_22120278.Views
                 e.PropertyName == nameof(DrawingShape.Y))
             {
                 RenderAllShapes();
+                // After re-render, update the stored reference
+                if (ViewModel.SelectedShape != null)
+                {
+                    foreach (var kvp in _shapeMapping)
+                    {
+                        if (kvp.Value == ViewModel.SelectedShape)
+                        {
+                            _selectedUIElement = kvp.Key;
+                            break;
+                        }
+                    }
+                }
             }
         }
 
@@ -494,6 +610,10 @@ namespace Windows_22120278.Views
                     _draggingShape = null;
                     _isDragging = false;
                 }
+                if (_selectedUIElement == shape)
+                {
+                    _selectedUIElement = null;
+                }
                 DrawingCanvas.Children.Remove(shape);
             }
 
@@ -509,6 +629,12 @@ namespace Windows_22120278.Views
                     uiShape.PointerCanceled += Shape_PointerReleased;
                     _shapeMapping[uiShape] = drawingShape;
                     DrawingCanvas.Children.Add(uiShape);
+                    
+                    // Update stored reference if this is the selected shape
+                    if (ViewModel.SelectedShape == drawingShape)
+                    {
+                        _selectedUIElement = uiShape;
+                    }
                 }
             }
         }
@@ -572,6 +698,8 @@ namespace Windows_22120278.Views
         {
             if (sender is UIElement uiElement && _shapeMapping.TryGetValue(uiElement, out var drawingShape))
             {
+                // Set selected UI element immediately when shape is clicked
+                _selectedUIElement = uiElement;
                 ViewModel.SelectedShape = drawingShape;
                 
                 _draggingShape = uiElement;
@@ -679,7 +807,7 @@ namespace Windows_22120278.Views
                 var colorBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(newColor);
                 ViewModel.SelectedShape.Color = colorBrush;
                 UpdateShapeColorPreview();
-                RenderAllShapes();
+                // Don't call RenderAllShapes() - let PropertyChanged handler update the UI directly
             }
         }
 

@@ -317,13 +317,6 @@
                               FontSize="11" />
         </StackPanel>
 
-                <!-- Save Changes Button -->
-                <Button Content="Save Changes"
-                        Command="{Binding SaveDrawingCommand}"
-                        Style="{StaticResource AccentButtonStyle}"
-                        HorizontalAlignment="Stretch"
-                        Margin="0,8,0,8" />
-
                 <!-- Delete Button -->
                 <Button Content="Delete Shape"
                         Command="{Binding DeleteSelectedShapeCommand}"

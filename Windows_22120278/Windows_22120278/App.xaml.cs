@@ -63,6 +63,7 @@ namespace Windows_22120278
             services.AddTransient<INavigationService, NavigationService>();
             services.AddTransient<ProfileViewModel>();
             services.AddTransient<DrawingViewModel>();
+            services.AddTransient<DashboardViewModel>();
             services.AddTransient<MainWindow>();
 
             return services.BuildServiceProvider();

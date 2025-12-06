@@ -50,6 +50,10 @@ namespace Windows_22120278
             {
                 NavView.SelectedItem = NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag?.ToString() == "Profiles");
             }
+            else if (e.SourcePageType == typeof(DashboardPage))
+            {
+                NavView.SelectedItem = NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag?.ToString() == "Dashboard");
+            }
         }
 
         private AppWindow? GetAppWindowForCurrentWindow()
@@ -67,6 +71,9 @@ namespace Windows_22120278
                 {
                     case "Profiles":
                         ContentFrame.Navigate(typeof(ProfilePage));
+                        break;
+                    case "Dashboard":
+                        ContentFrame.Navigate(typeof(DashboardPage));
                         break;
                 }
             }

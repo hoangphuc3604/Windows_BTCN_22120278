@@ -20,6 +20,7 @@
                         PaneDisplayMode="Left">
             <NavigationView.MenuItems>
                 <NavigationViewItem Content="Profiles" Icon="People" Tag="Profiles"/>
+                <NavigationViewItem Content="Dashboard" Icon="Library" Tag="Dashboard"/>
             </NavigationView.MenuItems>
             
             <Frame x:Name="ContentFrame" />

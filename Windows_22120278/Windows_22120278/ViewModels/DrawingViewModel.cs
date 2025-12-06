@@ -17,6 +17,7 @@ namespace Windows_22120278.ViewModels
     {
         private readonly IDrawingService _drawingService;
         private readonly INavigationService _navigationService;
+        private readonly ITemplateService _templateService;
 
         [ObservableProperty]
         private Color currentColor = Microsoft.UI.Colors.Black;
@@ -33,13 +34,17 @@ namespace Windows_22120278.ViewModels
         [ObservableProperty]
         private DrawingShape? selectedShape;
 
+        [ObservableProperty]
+        private ObservableCollection<ShapeTemplate> templates = new();
+
         private Profile? _currentProfile;
         private DrawingBoard? _currentDrawingBoard;
 
-        public DrawingViewModel(IDrawingService drawingService, INavigationService navigationService)
+        public DrawingViewModel(IDrawingService drawingService, INavigationService navigationService, ITemplateService templateService)
         {
             _drawingService = drawingService;
             _navigationService = navigationService;
+            _templateService = templateService;
         }
 
         public void SetProfile(Profile profile)
@@ -110,6 +115,92 @@ namespace Windows_22120278.ViewModels
             {
                 Shapes.Remove(SelectedShape);
                 SelectedShape = null;
+            }
+        }
+
+        [RelayCommand]
+        private async Task LoadTemplatesAsync()
+        {
+            var templatesList = await _templateService.GetAllTemplatesAsync();
+            Templates.Clear();
+            foreach (var template in templatesList)
+            {
+                Templates.Add(template);
+            }
+        }
+
+        [RelayCommand]
+        private async Task SaveAsTemplateAsync(string? name = null)
+        {
+            if (SelectedShape == null)
+                return;
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                // TODO: Show dialog to get name from user
+                name = $"Template {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
+            }
+
+            var template = await _templateService.SaveTemplateAsync(name, SelectedShape);
+            Templates.Add(template);
+        }
+
+        [RelayCommand]
+        private void LoadTemplate(ShapeTemplate template)
+        {
+            if (template == null)
+                return;
+
+            var drawingShape = _templateService.ConvertTemplateToDrawingShape(template);
+            if (drawingShape != null)
+            {
+                var newX = 100.0;
+                var newY = 100.0;
+                var oldX = drawingShape.X;
+                var oldY = drawingShape.Y;
+                var deltaX = newX - oldX;
+                var deltaY = newY - oldY;
+
+                if (drawingShape is PolygonShape polygonShape)
+                {
+                    for (int i = 0; i < polygonShape.Points.Count; i++)
+                    {
+                        var pt = polygonShape.Points[i];
+                        polygonShape.Points[i] = new Windows.Foundation.Point(pt.X + deltaX, pt.Y + deltaY);
+                    }
+                    
+                    var minX = polygonShape.Points.Min(p => p.X);
+                    var minY = polygonShape.Points.Min(p => p.Y);
+                    var maxX = polygonShape.Points.Max(p => p.X);
+                    var maxY = polygonShape.Points.Max(p => p.Y);
+                    
+                    polygonShape.X = minX;
+                    polygonShape.Y = minY;
+                    polygonShape.Width = maxX - minX;
+                    polygonShape.Height = maxY - minY;
+                }
+                else if (drawingShape is LineShape lineShape)
+                {
+                    if (Math.Abs(lineShape.Width) < 1)
+                        lineShape.Width = 50;
+                    if (Math.Abs(lineShape.Height) < 1)
+                        lineShape.Height = 50;
+                    
+                    lineShape.X = newX;
+                    lineShape.Y = newY;
+                }
+                else
+                {
+                    drawingShape.X = newX;
+                    drawingShape.Y = newY;
+                    
+                    if (drawingShape.Width <= 0)
+                        drawingShape.Width = 50;
+                    if (drawingShape.Height <= 0)
+                        drawingShape.Height = 50;
+                }
+
+                Shapes.Add(drawingShape);
             }
         }
     }

@@ -75,6 +75,7 @@ namespace Windows_22120278.Views
                 _currentProfile = profile;
                 ViewModel.SetProfile(profile);
                 await ViewModel.LoadDrawingCommand.ExecuteAsync(null);
+                await ViewModel.LoadTemplatesCommand.ExecuteAsync(null);
             }
         }
 
@@ -814,6 +815,101 @@ namespace Windows_22120278.Views
         private void ClosePropertiesButton_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.SelectedShape = null;
+        }
+
+        private void LoadTemplateToCanvas(ShapeTemplate template)
+        {
+            if (template == null)
+                return;
+
+            try
+            {
+                var templateService = App.Services.GetRequiredService<Windows_22120278.Services.ITemplateService>();
+                var drawingShape = templateService.ConvertTemplateToDrawingShape(template);
+                if (drawingShape != null)
+                {
+                    var newX = 100.0;
+                    var newY = 100.0;
+                    var oldX = drawingShape.X;
+                    var oldY = drawingShape.Y;
+                    var deltaX = newX - oldX;
+                    var deltaY = newY - oldY;
+
+                    if (drawingShape is Windows_22120278.Models.PolygonShape polygonShape)
+                    {
+                        if (polygonShape.Points != null && polygonShape.Points.Count >= 3)
+                        {
+                            for (int i = 0; i < polygonShape.Points.Count; i++)
+                            {
+                                var pt = polygonShape.Points[i];
+                                polygonShape.Points[i] = new Point(pt.X + deltaX, pt.Y + deltaY);
+                            }
+                            
+                            var minX = polygonShape.Points.Min(p => p.X);
+                            var minY = polygonShape.Points.Min(p => p.Y);
+                            var maxX = polygonShape.Points.Max(p => p.X);
+                            var maxY = polygonShape.Points.Max(p => p.Y);
+                            
+                            polygonShape.X = minX;
+                            polygonShape.Y = minY;
+                            polygonShape.Width = maxX - minX;
+                            polygonShape.Height = maxY - minY;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                    else if (drawingShape is Windows_22120278.Models.LineShape lineShape)
+                    {
+                        if (Math.Abs(lineShape.Width) < 1)
+                            lineShape.Width = 50;
+                        if (Math.Abs(lineShape.Height) < 1)
+                            lineShape.Height = 50;
+                        
+                        lineShape.X = newX;
+                        lineShape.Y = newY;
+                    }
+                    else
+                    {
+                        drawingShape.X = newX;
+                        drawingShape.Y = newY;
+                        
+                        if (drawingShape.Width <= 0)
+                            drawingShape.Width = 50;
+                        if (drawingShape.Height <= 0)
+                            drawingShape.Height = 50;
+                    }
+
+                    ViewModel.Shapes.Add(drawingShape);
+                    System.Diagnostics.Debug.WriteLine($"Template loaded: {template.Name}, Shape type: {drawingShape.GetType().Name}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to convert template: {template.Name}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading template: {ex.Message}\n{ex.StackTrace}");
+            }
+        }
+
+        private void TemplatesGridView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            if (e.ClickedItem is ShapeTemplate template)
+            {
+                LoadTemplateToCanvas(template);
+            }
+        }
+
+        private void TemplatesGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (TemplatesGridView.SelectedItem is ShapeTemplate template)
+            {
+                LoadTemplateToCanvas(template);
+                TemplatesGridView.SelectedItem = null;
+            }
         }
     }
 }

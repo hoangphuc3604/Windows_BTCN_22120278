@@ -53,7 +53,7 @@ namespace Windows_22120278
             {
                 string folderPath = ApplicationData.Current.LocalFolder.Path;
                 string dbPath = System.IO.Path.Combine(folderPath, "paint.db");
-                options.UseSqlite($"Data Source={dbPath}", 
+                options.UseSqlite($"Data Source={dbPath}",
                     b => b.MigrationsAssembly("Windows_22120278_Data"));
             });
 
@@ -77,10 +77,21 @@ namespace Windows_22120278
         protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             // Ensure database is created and migrated
-            using (var scope = Services.CreateScope())
+            try
             {
-                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                await context.Database.MigrateAsync();
+                using (var scope = Services.CreateScope())
+                {
+                    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                    await context.Database.MigrateAsync();
+                }
+            }
+            catch (Microsoft.Data.Sqlite.SqliteException ex) when (ex.SqliteErrorCode == 1 && ex.Message.Contains("duplicate column name"))
+            {
+                System.Diagnostics.Debug.WriteLine($"SQLite duplicate column detected during migration: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Database migration failed: {ex}");
             }
 
             _window = Services.GetRequiredService<MainWindow>();

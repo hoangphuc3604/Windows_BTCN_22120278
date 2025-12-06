@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Windows_22120278_Data.models
 {
@@ -26,6 +27,12 @@ namespace Windows_22120278_Data.models
         public double EndY { get; set; }
 
         public string PointsData { get; set; } = string.Empty;
+
+        // FK to Profile, since each Profile owns many templates
+        [ForeignKey(nameof(Profile))]
+        public int ProfileId { get; set; }
+
+        public Profile? Profile { get; set; }
     }
 }
 

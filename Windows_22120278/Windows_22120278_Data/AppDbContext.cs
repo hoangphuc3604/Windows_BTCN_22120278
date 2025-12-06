@@ -33,9 +33,15 @@ namespace Windows_22120278_Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Profile>()
-                .HasMany<DrawingBoard>()
-                .WithOne(p => p.Profile)
+                .HasMany(p => p.DrawingBoards)
+                .WithOne(d => d.Profile)
                 .HasForeignKey(d => d.ProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Profile>()
+                .HasMany(p => p.ShapeTemplates)
+                .WithOne(t => t.Profile)
+                .HasForeignKey(t => t.ProfileId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

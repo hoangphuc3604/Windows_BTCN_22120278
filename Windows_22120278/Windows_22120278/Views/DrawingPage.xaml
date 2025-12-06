@@ -91,9 +91,10 @@
                                       HorizontalAlignment="Center"
                                       Margin="0,0,0,4" />
                             <Button x:Name="ColorPickerButton"
-                                    Width="80"
+                                    Width="60"
                                     Height="32"
-                                    HorizontalAlignment="Center">
+                                    HorizontalAlignment="Center"
+                                    Padding="0">
                                 <Button.Flyout>
                                     <Flyout Placement="Bottom">
                                         <ColorPicker x:Name="ColorPickerControl"
@@ -108,9 +109,13 @@
                                 </Button.Flyout>
                                 <Border x:Name="ColorPreviewBorder"
                                        Background="Black"
-                                       BorderBrush="Black"
-                                       BorderThickness="1"
-                                       CornerRadius="2" />
+                                       BorderBrush="DarkGray"
+                                       BorderThickness="1.5"
+                                       CornerRadius="12"
+                                       Width="24"
+                                       Height="24"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center" />
                             </Button>
                         </StackPanel>
                     </Border>

@@ -24,12 +24,12 @@ namespace Windows_22120278.ViewModels
         private async Task LoadProfilesAsync()
         {
             try
+        {
+            var profilesList = await _profileService.GetProfilesAsync();
+            Profiles.Clear();
+            foreach (var profile in profilesList)
             {
-                var profilesList = await _profileService.GetProfilesAsync();
-                Profiles.Clear();
-                foreach (var profile in profilesList)
-                {
-                    Profiles.Add(profile);
+                Profiles.Add(profile);
                 }
             }
             catch (Exception ex)
@@ -44,18 +44,18 @@ namespace Windows_22120278.ViewModels
         {
             try
             {
-                var newProfile = new Profile
-                {
-                    Name = "New Profile",
-                    IsDefaultThemeDark = false,
-                    DefaultBoardWidth = 800,
-                    DefaultBoardHeight = 600
-                };
+            var newProfile = new Profile
+            {
+                Name = "New Profile",
+                IsDefaultThemeDark = false,
+                DefaultBoardWidth = 800,
+                DefaultBoardHeight = 600
+            };
 
-                var addedProfile = await _profileService.AddProfileAsync(newProfile);
+            var addedProfile = await _profileService.AddProfileAsync(newProfile);
                 if (addedProfile != null)
                 {
-                    Profiles.Add(addedProfile);
+            Profiles.Add(addedProfile);
                 }
             }
             catch (Exception ex)

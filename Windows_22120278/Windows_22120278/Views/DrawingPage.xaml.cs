@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
+using Windows.UI;
 using Windows_22120278.Models;
 using Windows_22120278.ViewModels;
 using Windows_22120278_Data.models;
@@ -75,7 +76,12 @@ namespace Windows_22120278.Views
 
         private void ColorPicker_ColorChanged(ColorPicker sender, ColorChangedEventArgs args)
         {
-            ViewModel.CurrentColor = args.NewColor;
+            var newColor = Windows.UI.Color.FromArgb(
+                args.NewColor.A,
+                args.NewColor.R,
+                args.NewColor.G,
+                args.NewColor.B);
+            ViewModel.CurrentColor = newColor;
             UpdateColorPreview();
         }
 

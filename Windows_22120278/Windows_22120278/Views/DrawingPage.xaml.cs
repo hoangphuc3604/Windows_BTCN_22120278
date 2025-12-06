@@ -109,7 +109,9 @@ namespace Windows_22120278.Views
             if (e.PropertyName == nameof(DrawingShape.Width) || 
                 e.PropertyName == nameof(DrawingShape.Height) || 
                 e.PropertyName == nameof(DrawingShape.StrokeThickness) ||
-                e.PropertyName == nameof(DrawingShape.Color))
+                e.PropertyName == nameof(DrawingShape.Color) ||
+                e.PropertyName == nameof(DrawingShape.X) ||
+                e.PropertyName == nameof(DrawingShape.Y))
             {
                 RenderAllShapes();
             }
@@ -488,7 +490,9 @@ namespace Windows_22120278.Views
                 if (uiShape != null)
                 {
                     uiShape.IsHitTestVisible = true;
+                    uiShape.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
                     uiShape.PointerPressed += Shape_PointerPressed;
+                    uiShape.ManipulationDelta += Shape_ManipulationDelta;
                     _shapeMapping[uiShape] = drawingShape;
                     DrawingCanvas.Children.Add(uiShape);
                 }
@@ -555,6 +559,57 @@ namespace Windows_22120278.Views
             if (sender is UIElement uiElement && _shapeMapping.TryGetValue(uiElement, out var drawingShape))
             {
                 ViewModel.SelectedShape = drawingShape;
+                e.Handled = true;
+            }
+        }
+
+        private void Shape_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            if (sender is UIElement uiElement && _shapeMapping.TryGetValue(uiElement, out var drawingShape))
+            {
+                var deltaX = e.Delta.Translation.X;
+                var deltaY = e.Delta.Translation.Y;
+
+                if (drawingShape is LineShape && uiElement is Line line)
+                {
+                    drawingShape.X += deltaX;
+                    drawingShape.Y += deltaY;
+                    line.X1 = drawingShape.X;
+                    line.Y1 = drawingShape.Y;
+                    line.X2 = drawingShape.X + drawingShape.Width;
+                    line.Y2 = drawingShape.Y + drawingShape.Height;
+                }
+                else if (drawingShape is PolygonShape polygonShape && uiElement is Polygon polygon)
+                {
+                    for (int i = 0; i < polygonShape.Points.Count; i++)
+                    {
+                        var pt = polygonShape.Points[i];
+                        polygonShape.Points[i] = new Point(pt.X + deltaX, pt.Y + deltaY);
+                    }
+                    
+                    if (polygonShape.Points.Count > 0)
+                    {
+                        var minX = polygonShape.Points.Min(p => p.X);
+                        var minY = polygonShape.Points.Min(p => p.Y);
+                        polygonShape.X = minX;
+                        polygonShape.Y = minY;
+                    }
+                    
+                    var newPoints = new PointCollection();
+                    foreach (var pt in polygonShape.Points)
+                    {
+                        newPoints.Add(pt);
+                    }
+                    polygon.Points = newPoints;
+                }
+                else
+                {
+                    drawingShape.X += deltaX;
+                    drawingShape.Y += deltaY;
+                    Canvas.SetLeft(uiElement, drawingShape.X);
+                    Canvas.SetTop(uiElement, drawingShape.Y);
+                }
+
                 e.Handled = true;
             }
         }

@@ -895,14 +895,6 @@ namespace Windows_22120278.Views
             }
         }
 
-        private void TemplatesGridView_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            if (e.ClickedItem is ShapeTemplate template)
-            {
-                LoadTemplateToCanvas(template);
-            }
-        }
-
         private void TemplatesGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (TemplatesGridView.SelectedItem is ShapeTemplate template)

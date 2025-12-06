@@ -211,7 +211,6 @@
                          SelectionMode="Single"
                          IsItemClickEnabled="True"
                          MaxHeight="400"
-                         ItemClick="TemplatesGridView_ItemClick"
                          SelectionChanged="TemplatesGridView_SelectionChanged">
                     <GridView.ItemTemplate>
                         <DataTemplate>

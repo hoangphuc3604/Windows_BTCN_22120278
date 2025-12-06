@@ -23,6 +23,7 @@ namespace Windows_22120278.Services
                 "ProfilePage" or "Profiles" or "Home" => typeof(ProfilePage),
                 "DashboardPage" or "Dashboard" => typeof(DashboardPage),
                 "DrawingPage" or "Drawing" => typeof(DrawingPage),
+                "SettingsPage" or "Settings" => typeof(SettingsPage),
                 _ => null
             };
 

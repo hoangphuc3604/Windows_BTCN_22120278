@@ -17,6 +17,7 @@ using Microsoft.UI.Xaml.Navigation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Graphics;
+using Windows.Storage;
 using WinRT.Interop;
 using Windows_22120278.Services;
 using Windows_22120278.Views;
@@ -28,6 +29,7 @@ namespace Windows_22120278
     {
         private AppWindow? _appWindow;
         private readonly ISelectedProfileService _selectedProfileService;
+        private const string ThemeSettingKey = "AppTheme";
 
         public MainWindow()
         {
@@ -39,28 +41,32 @@ namespace Windows_22120278
             if (_appWindow != null)
             {
                 _appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
-                _appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
-                _appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-                _appWindow.TitleBar.ButtonForegroundColor = Colors.Black;
-                _appWindow.TitleBar.ButtonInactiveForegroundColor = Colors.Gray;
-                _appWindow.TitleBar.BackgroundColor = Colors.Transparent;
-                _appWindow.TitleBar.InactiveBackgroundColor = Colors.Transparent;
+                UpdateTitleBarColors();
                 
-                NavView.PaneTitle = "Windows_22120278";
+                NavView.PaneTitle = "Drawing App";
             }
 
-            // Initialize NavigationService with Frame
             var navigationService = App.Services.GetRequiredService<INavigationService>();
             navigationService.SetFrame(ContentFrame);
 
             NavView.SelectionChanged += NavView_SelectionChanged;
+            NavView.BackRequested += NavView_BackRequested;
             ContentFrame.Navigated += ContentFrame_Navigated;
             _selectedProfileService.SelectedProfileChanged += SelectedProfileService_SelectedProfileChanged;
+            RootGrid.ActualThemeChanged += RootGrid_ActualThemeChanged;
+            
+            LoadTheme();
+            
+            this.ExtendsContentIntoTitleBar = true;
+            this.SetTitleBar(CustomTitleBar);
             
             ContentFrame.Navigate(typeof(ProfilePage));
             
-            // Initially disable Dashboard since no profile is selected
             UpdateNavigationItemsEnabledState();
+            
+            this.SizeChanged += MainWindow_SizeChanged;
+            
+            this.Activated += MainWindow_Activated;
         }
 
         private void SelectedProfileService_SelectedProfileChanged(object? sender, Profile? profile)
@@ -68,29 +74,8 @@ namespace Windows_22120278
             UpdateNavigationItemsEnabledState();
         }
 
-        private void ContentFrame_Navigated(object sender, NavigationEventArgs e)
-        {
-            if (e.SourcePageType == typeof(ProfilePage))
-            {
-                NavView.SelectedItem = NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag?.ToString() == "Profiles");
-            }
-            else if (e.SourcePageType == typeof(DashboardPage))
-            {
-                NavView.SelectedItem = NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag?.ToString() == "Dashboard");
-            }
-            else if (e.SourcePageType == typeof(DrawingPage))
-            {
-                // When navigating to DrawingPage, a profile should be passed
-                if (e.Parameter is Profile profile)
-                {
-                    _selectedProfileService.SelectedProfile = profile;
-                }
-            }
-        }
-
         private void UpdateNavigationItemsEnabledState()
         {
-            // Enable/Disable Dashboard based on whether a profile is selected
             var dashboardItem = NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag?.ToString() == "Dashboard");
             if (dashboardItem != null)
             {
@@ -120,7 +105,188 @@ namespace Windows_22120278
                             ContentFrame.Navigate(typeof(DashboardPage));
                         }
                         break;
+                    case "Settings":
+                        ContentFrame.Navigate(typeof(SettingsPage));
+                        break;
                 }
+            }
+        }
+
+        private void NavView_BackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
+        {
+            var navigationService = App.Services.GetRequiredService<INavigationService>();
+            navigationService.GoBack();
+        }
+
+        private void ContentFrame_Navigated(object sender, NavigationEventArgs e)
+        {
+            NavView.IsBackEnabled = ContentFrame.CanGoBack;
+
+            if (e.SourcePageType == typeof(ProfilePage))
+            {
+                NavView.SelectedItem = NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag?.ToString() == "Profiles");
+            }
+            else if (e.SourcePageType == typeof(DashboardPage))
+            {
+                NavView.SelectedItem = NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag?.ToString() == "Dashboard");
+            }
+            else if (e.SourcePageType == typeof(SettingsPage))
+            {
+                NavView.SelectedItem = NavView.SettingsItem;
+            }
+            else if (e.SourcePageType == typeof(DrawingPage))
+            {
+                if (e.Parameter is Profile profile)
+                {
+                    _selectedProfileService.SelectedProfile = profile;
+                }
+                NavView.SelectedItem = null;
+            }
+        }
+
+        private void MainWindow_SizeChanged(object sender, WindowSizeChangedEventArgs args)
+        {
+            double windowWidth = args.Size.Width;
+            
+            UpdateNavigationViewPaneDisplayMode(windowWidth);
+            
+            UpdateTitleBarLayout(windowWidth);
+        }
+
+        private void UpdateNavigationViewPaneDisplayMode(double windowWidth)
+        {
+            if (windowWidth < 640)
+            {
+                if (NavView.PaneDisplayMode != NavigationViewPaneDisplayMode.Top)
+                {
+                    NavView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+                }
+            }
+            else if (windowWidth < 1008)
+            {
+                if (NavView.PaneDisplayMode != NavigationViewPaneDisplayMode.LeftCompact)
+                {
+                    NavView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
+                }
+            }
+            else
+            {
+                if (NavView.PaneDisplayMode != NavigationViewPaneDisplayMode.Left)
+                {
+                    NavView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+                }
+            }
+        }
+
+        private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            if (_appWindow != null)
+            {
+                var windowSize = _appWindow.Size;
+                UpdateNavigationViewPaneDisplayMode(windowSize.Width);
+                UpdateTitleBarLayout(windowSize.Width);
+            }
+        }
+
+        private void UpdateTitleBarLayout(double windowWidth)
+        {
+            if (windowWidth < 600)
+            {
+                if (AppTitle != null)
+                {
+                    AppTitle.Visibility = Visibility.Collapsed;
+                }
+            }
+            else
+            {
+                if (AppTitle != null)
+                {
+                    AppTitle.Visibility = Visibility.Visible;
+                }
+            }
+        }
+
+        private void RootGrid_ActualThemeChanged(FrameworkElement sender, object args)
+        {
+            UpdateTitleBarColors();
+        }
+
+        private void UpdateTitleBarColors()
+        {
+            if (_appWindow == null) return;
+
+            var isDark = RootGrid.ActualTheme == ElementTheme.Dark;
+            
+            _appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
+            _appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+            _appWindow.TitleBar.BackgroundColor = Colors.Transparent;
+            _appWindow.TitleBar.InactiveBackgroundColor = Colors.Transparent;
+            
+            if (isDark)
+            {
+                _appWindow.TitleBar.ButtonForegroundColor = Colors.White;
+                _appWindow.TitleBar.ButtonInactiveForegroundColor = Colors.Gray;
+            }
+            else
+            {
+                _appWindow.TitleBar.ButtonForegroundColor = Colors.Black;
+                _appWindow.TitleBar.ButtonInactiveForegroundColor = Colors.Gray;
+            }
+        }
+
+        private void LoadTheme()
+        {
+            try
+            {
+                var localSettings = ApplicationData.Current.LocalSettings;
+                if (localSettings.Values.TryGetValue(ThemeSettingKey, out var themeValue))
+                {
+                    var theme = themeValue?.ToString();
+                    switch (theme)
+                    {
+                        case "Light":
+                            RootGrid.RequestedTheme = ElementTheme.Light;
+                            break;
+                        case "Dark":
+                            RootGrid.RequestedTheme = ElementTheme.Dark;
+                            break;
+                        case "System":
+                        default:
+                            RootGrid.RequestedTheme = ElementTheme.Default;
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading theme: {ex.Message}");
+            }
+        }
+
+        public ElementTheme GetCurrentTheme()
+        {
+            return RootGrid.ActualTheme;
+        }
+
+        public void SetTheme(ElementTheme theme)
+        {
+            RootGrid.RequestedTheme = theme;
+            UpdateTitleBarColors();
+            
+            try
+            {
+                var localSettings = ApplicationData.Current.LocalSettings;
+                var themeString = theme switch
+                {
+                    ElementTheme.Light => "Light",
+                    ElementTheme.Dark => "Dark",
+                    _ => "System"
+                };
+                localSettings.Values[ThemeSettingKey] = themeString;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error saving theme: {ex.Message}");
             }
         }
     }

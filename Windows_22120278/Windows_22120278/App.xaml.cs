@@ -33,6 +33,7 @@ namespace Windows_22120278
     public partial class App : Application
     {
         public static IServiceProvider Services { get; private set; } = null!;
+        public static MainWindow? MainWindowInstance { get; private set; }
         private Window? _window;
 
         /// <summary>
@@ -95,6 +96,7 @@ namespace Windows_22120278
             }
 
             _window = Services.GetRequiredService<MainWindow>();
+            MainWindowInstance = _window as MainWindow;
             _window.Activate();
         }
     }

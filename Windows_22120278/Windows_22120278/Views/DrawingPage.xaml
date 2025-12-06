@@ -14,17 +14,17 @@
 
         <!-- Toolbar Row -->
         <Border Grid.Row="0" 
-                Background="LightGray"
+                Background="{ThemeResource ControlFillColorDefaultBrush}"
                 Padding="12,8"
                 BorderThickness="0,0,0,1"
-                BorderBrush="DarkGray"
+                BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                 MaxHeight="120">
             <ScrollViewer VerticalScrollBarVisibility="Auto"
                          HorizontalScrollBarVisibility="Auto"
                          ZoomMode="Disabled">
                 <StackPanel Orientation="Horizontal" MinHeight="80">
                     <!-- Shapes Group -->
-                    <Border BorderBrush="DarkGray" 
+                    <Border BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}" 
                            BorderThickness="0,0,1,0"
                            Padding="12,8"
                            Margin="0,0,12,0"
@@ -45,7 +45,7 @@
                                     <!-- Keep icon content consistent with others: 32x32 visual box -->
                                     <Viewbox Width="32" Height="32" Stretch="Uniform">
                                         <Grid Width="32" Height="32">
-                                            <Path Stroke="Black"
+                                            <Path Stroke="{ThemeResource TextFillColorPrimaryBrush}"
                                                   StrokeThickness="2"
                                                   Data="M 0,32 L 32,0"
                                                   HorizontalAlignment="Center"
@@ -96,7 +96,7 @@
                     </Border>
 
                     <!-- Color Group -->
-                    <Border BorderBrush="DarkGray" 
+                    <Border BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}" 
                            BorderThickness="0,0,1,0"
                            Padding="12,8"
                            Margin="0,0,12,0"
@@ -127,7 +127,7 @@
                                 </Button.Flyout>
                                 <Border x:Name="ColorPreviewBorder"
                                        Background="Black"
-                                       BorderBrush="DarkGray"
+                                       BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                                        BorderThickness="1.5"
                                        CornerRadius="4"
                                        Width="32"
@@ -139,7 +139,7 @@
                     </Border>
 
                     <!-- Stroke Group -->
-                    <Border BorderBrush="DarkGray" 
+                    <Border BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}" 
                            BorderThickness="0,0,1,0"
                            Padding="12,8"
                            Margin="0,0,12,0"
@@ -228,8 +228,8 @@
             <!-- Templates Panel -->
             <StackPanel Grid.Column="0"
                        Width="200"
-                       Background="LightGray"
-                       BorderBrush="DarkGray"
+                       Background="{ThemeResource ControlFillColorDefaultBrush}"
+                       BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                        BorderThickness="0,0,1,0"
                        Padding="12">
                 <TextBlock Text="Templates"
@@ -255,8 +255,8 @@
                          SelectionChanged="TemplatesGridView_SelectionChanged">
                     <GridView.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="White"
-                                   BorderBrush="DarkGray"
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                   BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                    BorderThickness="1"
                                    Padding="8"
                                    Margin="4"
@@ -268,7 +268,7 @@
                                               TextWrapping="Wrap" />
                                     <TextBlock Text="{Binding Type}"
                                               FontSize="10"
-                                              Foreground="Gray"
+                                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                               Margin="0,4,0,0" />
                                 </StackPanel>
                             </Border>
@@ -279,7 +279,7 @@
 
         <ScrollViewer Grid.Column="1">
                 <Canvas x:Name="DrawingCanvas" 
-                        Background="White"
+                        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
                         PointerPressed="DrawingCanvas_PointerPressed"
                         PointerMoved="DrawingCanvas_PointerMoved"
                         PointerReleased="DrawingCanvas_PointerReleased"
@@ -291,8 +291,8 @@
             <StackPanel x:Name="PropertiesPanel"
                        Grid.Column="2"
                        Width="250"
-                       Background="LightGray"
-                       BorderBrush="DarkGray"
+                       Background="{ThemeResource ControlFillColorDefaultBrush}"
+                       BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                        BorderThickness="1,0,0,0"
                        Padding="16"
                        Spacing="12"
@@ -342,7 +342,7 @@
                     </Button.Flyout>
                     <Border x:Name="ShapeColorPreviewBorder"
                            Background="Black"
-                           BorderBrush="DarkGray"
+                           BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                            BorderThickness="1.5"
                            CornerRadius="4"
                            Width="32"

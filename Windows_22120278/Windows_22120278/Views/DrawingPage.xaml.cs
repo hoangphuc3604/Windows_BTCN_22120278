@@ -33,6 +33,10 @@ namespace Windows_22120278.Views
         private Windows_22120278_Data.models.Profile? _currentProfile;
         private Dictionary<UIElement, DrawingShape> _shapeMapping = new();
         private DrawingShape? _previousSelectedShape;
+        private UIElement? _draggingShape;
+        private Point _dragStartPoint;
+        private Point _shapeStartPosition;
+        private bool _isDragging = false;
 
         public DrawingPage()
         {
@@ -106,6 +110,8 @@ namespace Windows_22120278.Views
 
         private void SelectedShape_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
+            if (_isDragging) return;
+
             if (e.PropertyName == nameof(DrawingShape.Width) || 
                 e.PropertyName == nameof(DrawingShape.Height) || 
                 e.PropertyName == nameof(DrawingShape.StrokeThickness) ||
@@ -182,6 +188,8 @@ namespace Windows_22120278.Views
 
         private void DrawingCanvas_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            if (_draggingShape != null || _isDragging) return;
+
             var source = e.OriginalSource as UIElement;
             if (source != null && source != DrawingCanvas && _shapeMapping.ContainsKey(source))
             {
@@ -481,6 +489,11 @@ namespace Windows_22120278.Views
                 {
                     _shapeMapping.Remove(shape);
                 }
+                if (_draggingShape == shape)
+                {
+                    _draggingShape = null;
+                    _isDragging = false;
+                }
                 DrawingCanvas.Children.Remove(shape);
             }
 
@@ -490,9 +503,10 @@ namespace Windows_22120278.Views
                 if (uiShape != null)
                 {
                     uiShape.IsHitTestVisible = true;
-                    uiShape.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
                     uiShape.PointerPressed += Shape_PointerPressed;
-                    uiShape.ManipulationDelta += Shape_ManipulationDelta;
+                    uiShape.PointerMoved += Shape_PointerMoved;
+                    uiShape.PointerReleased += Shape_PointerReleased;
+                    uiShape.PointerCanceled += Shape_PointerReleased;
                     _shapeMapping[uiShape] = drawingShape;
                     DrawingCanvas.Children.Add(uiShape);
                 }
@@ -559,57 +573,95 @@ namespace Windows_22120278.Views
             if (sender is UIElement uiElement && _shapeMapping.TryGetValue(uiElement, out var drawingShape))
             {
                 ViewModel.SelectedShape = drawingShape;
+                
+                _draggingShape = uiElement;
+                _isDragging = true;
+                var point = e.GetCurrentPoint(DrawingCanvas);
+                _dragStartPoint = point.Position;
+                _shapeStartPosition = new Point(drawingShape.X, drawingShape.Y);
+                
+                uiElement.CapturePointer(e.Pointer);
                 e.Handled = true;
             }
         }
 
-        private void Shape_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        private void Shape_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (sender is UIElement uiElement && _shapeMapping.TryGetValue(uiElement, out var drawingShape))
+            if (_draggingShape != null && ReferenceEquals(sender, _draggingShape) && _shapeMapping.TryGetValue(_draggingShape, out var drawingShape))
             {
-                var deltaX = e.Delta.Translation.X;
-                var deltaY = e.Delta.Translation.Y;
+                try
+                {
+                    var point = e.GetCurrentPoint(DrawingCanvas);
+                    var currentPoint = point.Position;
+                    
+                    var deltaX = currentPoint.X - _dragStartPoint.X;
+                    var deltaY = currentPoint.Y - _dragStartPoint.Y;
+                    
+                    var newX = _shapeStartPosition.X + deltaX;
+                    var newY = _shapeStartPosition.Y + deltaY;
 
-                if (drawingShape is LineShape && uiElement is Line line)
-                {
-                    drawingShape.X += deltaX;
-                    drawingShape.Y += deltaY;
-                    line.X1 = drawingShape.X;
-                    line.Y1 = drawingShape.Y;
-                    line.X2 = drawingShape.X + drawingShape.Width;
-                    line.Y2 = drawingShape.Y + drawingShape.Height;
-                }
-                else if (drawingShape is PolygonShape polygonShape && uiElement is Polygon polygon)
-                {
-                    for (int i = 0; i < polygonShape.Points.Count; i++)
+                    if (drawingShape is LineShape && _draggingShape is Line line)
                     {
-                        var pt = polygonShape.Points[i];
-                        polygonShape.Points[i] = new Point(pt.X + deltaX, pt.Y + deltaY);
+                        drawingShape.X = newX;
+                        drawingShape.Y = newY;
+                        line.X1 = drawingShape.X;
+                        line.Y1 = drawingShape.Y;
+                        line.X2 = drawingShape.X + drawingShape.Width;
+                        line.Y2 = drawingShape.Y + drawingShape.Height;
+                    }
+                    else if (drawingShape is PolygonShape polygonShape && _draggingShape is Polygon polygon)
+                    {
+                        var deltaXTotal = newX - polygonShape.X;
+                        var deltaYTotal = newY - polygonShape.Y;
+
+                        for (int i = 0; i < polygonShape.Points.Count; i++)
+                        {
+                            var pt = polygonShape.Points[i];
+                            polygonShape.Points[i] = new Point(pt.X + deltaXTotal, pt.Y + deltaYTotal);
+                        }
+                        
+                        polygonShape.X = newX;
+                        polygonShape.Y = newY;
+                        
+                        var newPoints = new PointCollection();
+                        foreach (var pt in polygonShape.Points)
+                        {
+                            newPoints.Add(pt);
+                        }
+                        polygon.Points = newPoints;
+                    }
+                    else
+                    {
+                        drawingShape.X = newX;
+                        drawingShape.Y = newY;
+                        Canvas.SetLeft(_draggingShape, drawingShape.X);
+                        Canvas.SetTop(_draggingShape, drawingShape.Y);
                     }
                     
-                    if (polygonShape.Points.Count > 0)
-                    {
-                        var minX = polygonShape.Points.Min(p => p.X);
-                        var minY = polygonShape.Points.Min(p => p.Y);
-                        polygonShape.X = minX;
-                        polygonShape.Y = minY;
-                    }
-                    
-                    var newPoints = new PointCollection();
-                    foreach (var pt in polygonShape.Points)
-                    {
-                        newPoints.Add(pt);
-                    }
-                    polygon.Points = newPoints;
+                    e.Handled = true;
                 }
-                else
+                catch (Exception ex)
                 {
-                    drawingShape.X += deltaX;
-                    drawingShape.Y += deltaY;
-                    Canvas.SetLeft(uiElement, drawingShape.X);
-                    Canvas.SetTop(uiElement, drawingShape.Y);
+                    // Log error but don't crash
+                    System.Diagnostics.Debug.WriteLine($"Error in Shape_PointerMoved: {ex.Message}");
                 }
+            }
+        }
 
+        private void Shape_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (_draggingShape != null && ReferenceEquals(sender, _draggingShape))
+            {
+                try
+                {
+                    _draggingShape.ReleasePointerCapture(e.Pointer);
+                }
+                catch
+                {
+                    // Ignore if pointer was already released
+                }
+                _isDragging = false;
+                _draggingShape = null;
                 e.Handled = true;
             }
         }

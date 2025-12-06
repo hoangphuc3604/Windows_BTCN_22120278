@@ -213,37 +213,44 @@ namespace Windows_22120278.Views
             }
             else if (drawingShape is CircleShape circleShape)
             {
-                var size = Math.Max(circleShape.Width, circleShape.Height) * scale;
+                var circleSize = Math.Max(circleShape.Width, circleShape.Height);
+                var scaledSize = circleSize * scale;
+                var centerOffsetX = centerX - (scaledSize / 2);
+                var centerOffsetY = centerY - (scaledSize / 2);
+                
                 var ellipse = new Ellipse
                 {
                     Stroke = drawingShape.Color,
                     StrokeThickness = drawingShape.StrokeThickness * scale,
                     Fill = null,
-                    Width = size,
-                    Height = size
+                    Width = scaledSize,
+                    Height = scaledSize
                 };
-                Canvas.SetLeft(ellipse, (circleShape.X * scale) + offsetX);
-                Canvas.SetTop(ellipse, (circleShape.Y * scale) + offsetY);
+                Canvas.SetLeft(ellipse, centerOffsetX);
+                Canvas.SetTop(ellipse, centerOffsetY);
                 uiShape = ellipse;
             }
             else if (drawingShape is TriangleShape triangleShape)
             {
-                var triangle = new Polygon
+                if (triangleShape.Points != null && triangleShape.Points.Count == 3)
                 {
-                    Stroke = drawingShape.Color,
-                    StrokeThickness = drawingShape.StrokeThickness * scale,
-                    Fill = null
-                };
+                    var triangle = new Polygon
+                    {
+                        Stroke = drawingShape.Color,
+                        StrokeThickness = drawingShape.StrokeThickness * scale,
+                        Fill = null
+                    };
 
-                var pointCollection = new PointCollection();
-                foreach (var pt in triangleShape.Points)
-                {
-                    pointCollection.Add(new Point(
-                        (pt.X * scale) + offsetX,
-                        (pt.Y * scale) + offsetY));
+                    var pointCollection = new PointCollection();
+                    foreach (var pt in triangleShape.Points)
+                    {
+                        pointCollection.Add(new Point(
+                            (pt.X * scale) + offsetX,
+                            (pt.Y * scale) + offsetY));
+                    }
+                    triangle.Points = pointCollection;
+                    uiShape = triangle;
                 }
-                triangle.Points = pointCollection;
-                uiShape = triangle;
             }
 
             if (uiShape != null)
@@ -364,6 +371,40 @@ namespace Windows_22120278.Views
                 Canvas.SetLeft(ellipse, (drawingShape.X * scale) + offsetX);
                 Canvas.SetTop(ellipse, (drawingShape.Y * scale) + offsetY);
                 uiShape = ellipse;
+            }
+            else if (drawingShape is CircleShape circleShape)
+            {
+                var size = Math.Max(circleShape.Width, circleShape.Height) * scale;
+                var ellipse = new Ellipse
+                {
+                    Stroke = drawingShape.Color,
+                    StrokeThickness = drawingShape.StrokeThickness * scale,
+                    Fill = null,
+                    Width = size,
+                    Height = size
+                };
+                Canvas.SetLeft(ellipse, (circleShape.X * scale) + offsetX);
+                Canvas.SetTop(ellipse, (circleShape.Y * scale) + offsetY);
+                uiShape = ellipse;
+            }
+            else if (drawingShape is TriangleShape triangleShape)
+            {
+                var triangle = new Polygon
+                {
+                    Stroke = drawingShape.Color,
+                    StrokeThickness = drawingShape.StrokeThickness * scale,
+                    Fill = null
+                };
+
+                var pointCollection = new PointCollection();
+                foreach (var pt in triangleShape.Points)
+                {
+                    pointCollection.Add(new Point(
+                        (pt.X * scale) + offsetX,
+                        (pt.Y * scale) + offsetY));
+                }
+                triangle.Points = pointCollection;
+                uiShape = triangle;
             }
 
             if (uiShape != null)

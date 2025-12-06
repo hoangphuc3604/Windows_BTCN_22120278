@@ -43,11 +43,11 @@
                                         CornerRadius="4"
                                         Padding="8">
                                     <!-- Keep icon content consistent with others: 32x32 visual box -->
-                                    <Viewbox Width="32" Height="32" Stretch="Uniform">
-                                        <Grid Width="32" Height="32">
+                                    <Viewbox Width="24" Height="24" Stretch="Uniform">
+                                        <Grid Width="24" Height="24">
                                             <Path Stroke="{ThemeResource TextFillColorPrimaryBrush}"
                                                   StrokeThickness="2"
-                                                  Data="M 0,32 L 32,0"
+                                                  Data="M 0,24 L 24,0"
                                                   HorizontalAlignment="Center"
                                                   VerticalAlignment="Center" />
                                         </Grid>
@@ -62,7 +62,9 @@
                                         Height="48"
                                         CornerRadius="4"
                                         Padding="8">
-                                    <FontIcon Glyph="&#xE739;" FontFamily="Segoe Fluent Icons" FontSize="20"/>
+                                    <Viewbox Width="24" Height="24" Stretch="Uniform">
+                                        <FontIcon Glyph="&#xE739;" FontFamily="Segoe Fluent Icons" FontSize="20"/>
+                                    </Viewbox>
                                     <ToolTipService.ToolTip>
                                         <ToolTip Content="Rectangle" />
                                     </ToolTipService.ToolTip>
@@ -73,7 +75,9 @@
                                         Height="48"
                                         CornerRadius="4"
                                         Padding="8">
-                                    <FontIcon Glyph="&#xEA3A;" FontFamily="Segoe Fluent Icons" FontSize="20"/>
+                                    <Viewbox Width="24" Height="24" Stretch="Uniform">
+                                        <FontIcon Glyph="&#xEA3A;" FontFamily="Segoe Fluent Icons" FontSize="20"/>
+                                    </Viewbox>
                                     <ToolTipService.ToolTip>
                                         <ToolTip Content="Ellipse" />
                                     </ToolTipService.ToolTip>
@@ -84,9 +88,11 @@
                                         Height="48"
                                         CornerRadius="4"
                                         Padding="8">
-                                    <PathIcon Data="M 10,2 L 19,9 L 15,19 L 5,19 L 1,9 Z" 
-                                              HorizontalAlignment="Center" 
-                                              VerticalAlignment="Center"/>
+                                    <Viewbox Width="24" Height="24" Stretch="Uniform">
+                                        <PathIcon Data="M 10,2 L 19,9 L 15,19 L 5,19 L 1,9 Z" 
+                                                  HorizontalAlignment="Center" 
+                                                  VerticalAlignment="Center"/>
+                                    </Viewbox>
                                     <ToolTipService.ToolTip>
                                         <ToolTip Content="Polygon" />
                                     </ToolTipService.ToolTip>
@@ -97,11 +103,11 @@
                                         Height="48"
                                         CornerRadius="4"
                                         Padding="8">
-                                    <Viewbox Width="32" Height="32" Stretch="Uniform">
+                                    <Viewbox Width="24" Height="24" Stretch="Uniform">
                                         <Ellipse Stroke="{ThemeResource TextFillColorPrimaryBrush}"
                                                  StrokeThickness="2"
-                                                 Width="32"
-                                                 Height="32"
+                                                 Width="24"
+                                                 Height="24"
                                                  HorizontalAlignment="Center"
                                                  VerticalAlignment="Center" />
                                     </Viewbox>
@@ -115,9 +121,11 @@
                                         Height="48"
                                         CornerRadius="4"
                                         Padding="8">
-                                    <PathIcon Data="M 16,4 L 28,28 L 4,28 Z" 
-                                              HorizontalAlignment="Center" 
-                                              VerticalAlignment="Center"/>
+                                    <Viewbox Width="24" Height="24" Stretch="Uniform">
+                                        <PathIcon Data="M 16,4 L 28,28 L 4,28 Z" 
+                                                  HorizontalAlignment="Center" 
+                                                  VerticalAlignment="Center"/>
+                                    </Viewbox>
                                     <ToolTipService.ToolTip>
                                         <ToolTip Content="Triangle" />
                                     </ToolTipService.ToolTip>

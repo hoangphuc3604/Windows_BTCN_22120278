@@ -7,8 +7,8 @@ namespace Windows_22120278.Services
 {
     public interface ITemplateService
     {
-        Task<List<ShapeTemplate>> GetAllTemplatesAsync();
-        Task<ShapeTemplate> SaveTemplateAsync(string name, DrawingShape shape);
+        Task<List<ShapeTemplate>> GetAllTemplatesAsync(int profileId);
+        Task<ShapeTemplate> SaveTemplateAsync(string name, DrawingShape shape, int profileId);
         Task<bool> DeleteTemplateAsync(int templateId);
         DrawingShape? ConvertTemplateToDrawingShape(ShapeTemplate template);
     }

@@ -121,7 +121,10 @@ namespace Windows_22120278.ViewModels
         [RelayCommand]
         private async Task LoadTemplatesAsync()
         {
-            var templatesList = await _templateService.GetAllTemplatesAsync();
+            if (_currentProfile == null)
+                return;
+
+            var templatesList = await _templateService.GetAllTemplatesAsync(_currentProfile.Id);
             Templates.Clear();
             foreach (var template in templatesList)
             {
@@ -135,13 +138,16 @@ namespace Windows_22120278.ViewModels
             if (SelectedShape == null)
                 return;
 
+            if (_currentProfile == null)
+                return;
+
             if (string.IsNullOrWhiteSpace(name))
             {
                 // TODO: Show dialog to get name from user
                 name = $"Template {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
             }
 
-            var template = await _templateService.SaveTemplateAsync(name, SelectedShape);
+            var template = await _templateService.SaveTemplateAsync(name, SelectedShape, _currentProfile.Id);
             Templates.Add(template);
         }
 

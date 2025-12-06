@@ -21,20 +21,22 @@ namespace Windows_22120278.Services
             _context = context;
         }
 
-        public async Task<List<ShapeTemplate>> GetAllTemplatesAsync()
+        public async Task<List<ShapeTemplate>> GetAllTemplatesAsync(int profileId)
         {
             return await _context.ShapeTemplates
+                .Where(t => t.ProfileId == profileId)
                 .OrderBy(t => t.Name)
                 .ToListAsync();
         }
 
-        public async Task<ShapeTemplate> SaveTemplateAsync(string name, DrawingShape shape)
+        public async Task<ShapeTemplate> SaveTemplateAsync(string name, DrawingShape shape, int profileId)
         {
             var template = new ShapeTemplate
             {
                 Name = name,
                 Color = ConvertColorToHex(shape.Color),
-                StrokeThickness = shape.StrokeThickness
+                StrokeThickness = shape.StrokeThickness,
+                ProfileId = profileId
             };
 
             if (shape is LineShape lineShape)

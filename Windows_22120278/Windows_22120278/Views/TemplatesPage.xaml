@@ -19,8 +19,10 @@
 
         <GridView
             Grid.Row="1"
+            x:Name="TemplatesGridView"
             ItemsSource="{x:Bind ViewModel.Templates, Mode=OneWay}"
-            SelectionMode="None">
+            SelectionMode="None"
+            ContainerContentChanging="TemplatesGridView_ContainerContentChanging">
             <GridView.ItemTemplate>
                 <DataTemplate x:DataType="models:ShapeTemplate">
                     <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"

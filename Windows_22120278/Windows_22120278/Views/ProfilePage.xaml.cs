@@ -25,27 +25,11 @@ namespace Windows_22120278.Views
             await ViewModel.LoadProfilesCommand.ExecuteAsync(null);
         }
 
-        private void ManageBoardsButton_Click(object sender, RoutedEventArgs e)
+        private async void ProfilePage_EditProfile(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.Tag is Profile profile)
+            if (ViewModel.SelectedProfile != null)
             {
-                // Set selected profile in service
-                var selectedProfileService = App.Services.GetRequiredService<Windows_22120278.Services.ISelectedProfileService>();
-                selectedProfileService.SelectedProfile = profile;
-                
-                var frame = this.Frame;
-                if (frame != null)
-                {
-                    frame.Navigate(typeof(BoardsPage), profile);
-                }
-            }
-        }
-
-        private async void EditButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button button && button.Tag is Profile profile)
-            {
-                var editDialog = new EditProfileDialog(profile);
+                var editDialog = new EditProfileDialog(ViewModel.SelectedProfile);
                 editDialog.XamlRoot = this.XamlRoot;
                 var result = await editDialog.ShowAsync();
 
@@ -54,17 +38,9 @@ namespace Windows_22120278.Views
                     var updatedProfile = editDialog.GetUpdatedProfile();
                     if (updatedProfile != null)
                     {
-                        await ViewModel.UpdateProfileAsync(profile, updatedProfile);
+                        await ViewModel.UpdateProfileAsync(ViewModel.SelectedProfile, updatedProfile);
                     }
                 }
-            }
-        }
-
-        private async void DeleteButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button button && button.Tag is Profile profile)
-            {
-                await ViewModel.DeleteProfileCommand.ExecuteAsync(profile);
             }
         }
     }

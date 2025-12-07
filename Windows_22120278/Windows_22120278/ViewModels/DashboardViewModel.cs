@@ -8,6 +8,7 @@ using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using Microsoft.EntityFrameworkCore;
 using SkiaSharp;
+using Windows_22120278.Services;
 using Windows_22120278_Data;
 using Windows_22120278_Data.models;
 
@@ -16,22 +17,37 @@ namespace Windows_22120278.ViewModels
     public partial class DashboardViewModel : ObservableObject
     {
         private readonly AppDbContext _context;
+        private readonly INavigationService _navigationService;
+        private readonly ISelectedProfileService _selectedProfileService;
 
         [ObservableProperty]
         private int totalBoards;
 
         [ObservableProperty]
+        private int totalTemplates;
+
+        [ObservableProperty]
+        private int totalShapes;
+
+        [ObservableProperty]
         private ObservableCollection<ISeries> shapeDistribution = new();
 
-        public DashboardViewModel(AppDbContext context)
+        public DashboardViewModel(AppDbContext context, INavigationService navigationService, ISelectedProfileService selectedProfileService)
         {
             _context = context;
+            _navigationService = navigationService;
+            _selectedProfileService = selectedProfileService;
         }
 
         [RelayCommand]
         private async Task LoadStatsAsync()
         {
+            var profile = _selectedProfileService.SelectedProfile;
+            if (profile == null)
+                return;
+
             var shapeGroups = await _context.Shapes
+                .Where(s => s.DrawingBoard != null && s.DrawingBoard.ProfileId == profile.Id)
                 .GroupBy(s => s.Type)
                 .Select(g => new
                 {
@@ -40,7 +56,17 @@ namespace Windows_22120278.ViewModels
                 })
                 .ToListAsync();
 
-            TotalBoards = await _context.DrawingBoards.Distinct().CountAsync();
+            TotalBoards = await _context.DrawingBoards
+                .Where(b => b.ProfileId == profile.Id)
+                .CountAsync();
+
+            TotalTemplates = await _context.ShapeTemplates
+                .Where(t => t.ProfileId == profile.Id)
+                .CountAsync();
+
+            TotalShapes = await _context.Shapes
+                .Where(s => s.DrawingBoard != null && s.DrawingBoard.ProfileId == profile.Id)
+                .CountAsync();
 
             var series = new ObservableCollection<ISeries>();
 
@@ -68,6 +94,18 @@ namespace Windows_22120278.ViewModels
             }
 
             ShapeDistribution = series;
+        }
+
+        [RelayCommand]
+        private void NavigateToSavedCanvases()
+        {
+            _navigationService.NavigateTo("SavedCanvases");
+        }
+
+        [RelayCommand]
+        private void NavigateToTemplates()
+        {
+            _navigationService.NavigateTo("Templates");
         }
     }
 }

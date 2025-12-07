@@ -22,10 +22,12 @@ namespace Windows_22120278.Services
             Type? pageType = pageName switch
             {
                 "ProfilePage" or "Profiles" or "Home" => typeof(ProfilePage),
-                "DashboardPage" or "Dashboard" => typeof(DashboardPage),
+                "DashboardPage" or "Dashboard" or "Management" => typeof(DashboardPage),
                 "BoardsPage" or "Boards" => typeof(BoardsPage),
                 "DrawingPage" or "Drawing" => typeof(DrawingPage),
                 "SettingsPage" or "Settings" => typeof(SettingsPage),
+                "SavedCanvases" => typeof(SavedCanvasesPage),
+                "Templates" => typeof(TemplatesPage),
                 _ => null
             };
 

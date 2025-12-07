@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
 using Windows.UI;
 using Windows_22120278.Models;
@@ -78,7 +79,29 @@ namespace Windows_22120278.ViewModels
         private async Task SaveDrawing()
         {
             if (_currentDrawingBoard == null)
-                return;
+            {
+                if (_currentProfile == null)
+                {
+                    var selectedProfileService = App.Services.GetRequiredService<ISelectedProfileService>();
+                    _currentProfile = selectedProfileService.SelectedProfile;
+                }
+                
+                if (_currentProfile == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("Cannot save: No profile selected");
+                    return;
+                }
+                
+                _currentDrawingBoard = new DrawingBoard
+                {
+                    Name = $"Drawing {DateTime.Now:yyyy-MM-dd HH:mm:ss}",
+                    Width = _currentProfile.DefaultBoardWidth,
+                    Height = _currentProfile.DefaultBoardHeight,
+                    BackgroundColor = "#FFFFFF",
+                    ProfileId = _currentProfile.Id,
+                    CreatedDate = DateTime.Now
+                };
+            }
 
             var shapesList = Shapes.ToList();
             _currentDrawingBoard = await _drawingService.SaveDrawingAsync(_currentDrawingBoard, shapesList);
@@ -122,11 +145,19 @@ namespace Windows_22120278.ViewModels
                 return;
 
             if (_currentProfile == null)
+            {
+                var selectedProfileService = App.Services.GetRequiredService<ISelectedProfileService>();
+                _currentProfile = selectedProfileService.SelectedProfile;
+            }
+            
+            if (_currentProfile == null)
+            {
+                System.Diagnostics.Debug.WriteLine("Cannot save template: No profile selected");
                 return;
+            }
 
             if (string.IsNullOrWhiteSpace(name))
             {
-                // TODO: Show dialog to get name from user
                 name = $"Template {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
             }
 

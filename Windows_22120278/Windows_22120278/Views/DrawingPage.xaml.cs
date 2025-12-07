@@ -81,6 +81,32 @@ namespace Windows_22120278.Views
                 await ViewModel.LoadDrawingCommand.ExecuteAsync(null);
                 await ViewModel.LoadTemplatesCommand.ExecuteAsync(null);
             }
+            else
+            {
+                var selectedProfileService = App.Services.GetRequiredService<Windows_22120278.Services.ISelectedProfileService>();
+                var profile = selectedProfileService.SelectedProfile;
+                
+                if (profile != null)
+                {
+                    _currentProfile = profile;
+                    
+                    var drawingService = App.Services.GetRequiredService<Windows_22120278.Services.IDrawingService>();
+                    var newBoard = new Windows_22120278_Data.models.DrawingBoard
+                    {
+                        Name = $"Drawing {DateTime.Now:yyyy-MM-dd HH:mm:ss}",
+                        Width = profile.DefaultBoardWidth,
+                        Height = profile.DefaultBoardHeight,
+                        BackgroundColor = "#FFFFFF",
+                        ProfileId = profile.Id,
+                        CreatedDate = DateTime.Now
+                    };
+                    
+                    var createdBoard = await drawingService.CreateDrawingBoardAsync(newBoard);
+                    _currentProfile = createdBoard.Profile;
+                    ViewModel.SetDrawingBoard(createdBoard);
+                    await ViewModel.LoadTemplatesCommand.ExecuteAsync(null);
+                }
+            }
         }
 
         private void DrawingPage_Unloaded(object sender, RoutedEventArgs e)

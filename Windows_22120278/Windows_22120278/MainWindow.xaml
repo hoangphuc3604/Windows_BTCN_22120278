@@ -19,21 +19,34 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Custom Title Bar -->
         <Grid x:Name="CustomTitleBar" 
               Grid.Row="0"
               Height="32"
               Background="Transparent">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- App Icon and Title -->
-            <StackPanel Grid.Column="0" 
+            <Button x:Name="BackButton"
+                    Grid.Column="0"
+                    Width="46"
+                    Height="32"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="12,0"
+                    Click="BackButton_Click"
+                    IsEnabled="False"
+                    ToolTipService.ToolTip="Back">
+                <FontIcon Glyph="&#xE72B;" 
+                         FontFamily="Segoe Fluent Icons" 
+                         FontSize="12"/>
+            </Button>
+
+            <StackPanel Grid.Column="1" 
                        Orientation="Horizontal" 
-                       Margin="12,0,12,0"
+                       Margin="0,0,12,0"
                        VerticalAlignment="Center">
                 <FontIcon Glyph="&#xE7C3;" 
                          FontFamily="Segoe Fluent Icons" 
@@ -46,22 +59,22 @@
                           x:Name="AppTitle"/>
             </StackPanel>
 
-            <!-- Drag Region -->
-            <Grid Grid.Column="1" 
+            <Grid Grid.Column="2" 
                   Background="Transparent"
                   x:Name="DragRegion"/>
         </Grid>
 
         <NavigationView x:Name="NavView" 
                         Grid.Row="1"
-                        IsBackButtonVisible="Auto"
+                        IsBackButtonVisible="Collapsed"
                         IsSettingsVisible="True"
                         PaneDisplayMode="Left"
                         CompactModeThresholdWidth="641"
                         ExpandedModeThresholdWidth="1008">
             <NavigationView.MenuItems>
-                <NavigationViewItem Content="Profiles" Icon="People" Tag="Profiles"/>
-                <NavigationViewItem Content="Dashboard" Icon="Library" Tag="Dashboard"/>
+                <NavigationViewItem Content="Home" Icon="Home" Tag="Home"/>
+                <NavigationViewItem Content="Drawing" Icon="Edit" Tag="Drawing"/>
+                <NavigationViewItem Content="Management" Icon="Library" Tag="Management"/>
             </NavigationView.MenuItems>
             
             <Frame x:Name="ContentFrame" />

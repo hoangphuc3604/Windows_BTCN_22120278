@@ -5,6 +5,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Windows_22120278.Services;
 using Windows_22120278_Data.models;
+using Microsoft.UI.Xaml.Controls;
+using Windows_22120278.Views;
+using Microsoft.UI.Xaml; // add for FrameworkElement
 
 namespace Windows_22120278.ViewModels
 {
@@ -12,14 +15,19 @@ namespace Windows_22120278.ViewModels
     {
         private readonly IProfileService _profileService;
         private readonly ISelectedProfileService _selectedProfileService;
+        private readonly INavigationService _navigationService;
 
         [ObservableProperty]
         private ObservableCollection<Profile> profiles = new();
 
-        public ProfileViewModel(IProfileService profileService, ISelectedProfileService selectedProfileService)
+        [ObservableProperty]
+        private Profile? selectedProfile;
+
+        public ProfileViewModel(IProfileService profileService, ISelectedProfileService selectedProfileService, INavigationService navigationService)
         {
             _profileService = profileService;
             _selectedProfileService = selectedProfileService;
+            _navigationService = navigationService;
         }
 
         [RelayCommand]
@@ -49,41 +57,72 @@ namespace Windows_22120278.ViewModels
         }
 
         [RelayCommand]
-        private async Task AddDefaultProfileAsync()
+        private async Task CreateProfileAsync()
         {
             try
             {
-            var newProfile = new Profile
-            {
-                Name = "New Profile",
-                IsDefaultThemeDark = false,
-                DefaultBoardWidth = 800,
-                DefaultBoardHeight = 600
-            };
+                var newProfile = new Profile
+                {
+                    Name = $"Profile {Profiles.Count + 1}",
+                    IsDefaultThemeDark = false,
+                    DefaultBoardWidth = 800,
+                    DefaultBoardHeight = 600
+                };
 
-            var addedProfile = await _profileService.AddProfileAsync(newProfile);
+                var addedProfile = await _profileService.AddProfileAsync(newProfile);
                 if (addedProfile != null)
                 {
-            Profiles.Add(addedProfile);
-                    // Set the newly created profile as selected to enable navigation buttons
+                    Profiles.Add(addedProfile);
+                    SelectedProfile = addedProfile;
                     _selectedProfileService.SelectedProfile = addedProfile;
                 }
             }
             catch (Exception ex)
             {
-                // Log error - in production, use proper logging
                 System.Diagnostics.Debug.WriteLine($"Error adding profile: {ex.Message}");
-                throw; // Re-throw to let UI handle it
+                throw;
             }
         }
 
         [RelayCommand]
-        private async Task EditProfileAsync(Profile profile)
+        private async Task EditProfileAsync(Profile? profile)
         {
             if (profile == null)
                 return;
 
+            try
+            {
+                var dialog = new EditProfileDialog(profile);
+                if (Windows_22120278.App.MainWindowInstance is MainWindow mainWindow && mainWindow.Content is FrameworkElement rootElement)
+                {
+                    dialog.XamlRoot = rootElement.XamlRoot;
+                }
+
+                var result = await dialog.ShowAsync();
+                if (result == ContentDialogResult.Primary)
+                {
+                    var updatedProfile = dialog.GetUpdatedProfile();
+                    if (updatedProfile != null)
+                    {
+                        await UpdateProfileAsync(profile, updatedProfile);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error editing profile: {ex.Message}");
+            }
             await Task.CompletedTask;
+        }
+
+        [RelayCommand]
+        private void StartDrawing()
+        {
+            if (SelectedProfile != null)
+            {
+                _selectedProfileService.SelectedProfile = SelectedProfile;
+                _navigationService.NavigateTo("DrawingPage");
+            }
         }
 
         public async Task<bool> UpdateProfileAsync(Profile originalProfile, Profile updatedProfile)
@@ -110,25 +149,29 @@ namespace Windows_22120278.ViewModels
         }
 
         [RelayCommand]
-        private async Task DeleteProfileAsync(Profile profile)
+        private async Task DeleteProfileAsync(Profile? profile)
         {
             if (profile != null)
             {
                 await _profileService.DeleteProfileAsync(profile.Id);
                 Profiles.Remove(profile);
                 
-                // If the deleted profile was the selected one, select another profile or clear selection
+                if (SelectedProfile?.Id == profile.Id)
+                {
+                    SelectedProfile = null;
+                }
+                
                 if (_selectedProfileService.SelectedProfile?.Id == profile.Id)
                 {
                     if (Profiles.Count > 0)
                     {
-                        // Select the first remaining profile
                         _selectedProfileService.SelectedProfile = Profiles[0];
+                        SelectedProfile = Profiles[0];
                     }
                     else
                     {
-                        // No profiles left, clear selection
                         _selectedProfileService.SelectedProfile = null;
+                        SelectedProfile = null;
                     }
                 }
             }

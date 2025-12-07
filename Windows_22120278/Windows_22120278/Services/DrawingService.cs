@@ -25,6 +25,11 @@ namespace Windows_22120278.Services
         {
             if (drawingBoard.Id == 0)
             {
+                if (drawingBoard.ProfileId == 0)
+                {
+                    throw new InvalidOperationException("ProfileId must be set before saving a new drawing board");
+                }
+                
                 drawingBoard.CreatedDate = DateTime.Now;
                 _context.DrawingBoards.Add(drawingBoard);
                 await _context.SaveChangesAsync();
@@ -41,6 +46,11 @@ namespace Windows_22120278.Services
                     existingBoard.Width = drawingBoard.Width;
                     existingBoard.Height = drawingBoard.Height;
                     existingBoard.BackgroundColor = drawingBoard.BackgroundColor;
+                    
+                    if (drawingBoard.ProfileId != 0)
+                    {
+                        existingBoard.ProfileId = drawingBoard.ProfileId;
+                    }
 
                     _context.Shapes.RemoveRange(existingBoard.Shapes);
                     await _context.SaveChangesAsync();
@@ -54,7 +64,10 @@ namespace Windows_22120278.Services
             }
 
             await _context.SaveChangesAsync();
-            return drawingBoard;
+            
+            return await _context.DrawingBoards
+                .Include(d => d.Profile)
+                .FirstOrDefaultAsync(d => d.Id == drawingBoard.Id) ?? drawingBoard;
         }
 
         private ShapeEntity ConvertToShapeEntity(DrawingShape drawingShape, int drawingBoardId)

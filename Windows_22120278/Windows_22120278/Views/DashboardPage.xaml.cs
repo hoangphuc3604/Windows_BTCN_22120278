@@ -29,10 +29,10 @@ namespace Windows_22120278.Views
         {
             if (args.Item is string item)
             {
+                var navigationService = App.Services.GetRequiredService<INavigationService>();
                 if (item == "Home")
                 {
-                    var navigationService = App.Services.GetRequiredService<INavigationService>();
-                    navigationService.NavigateTo("Profiles");
+                    navigationService.NavigateTo("Home");
                 }
             }
         }

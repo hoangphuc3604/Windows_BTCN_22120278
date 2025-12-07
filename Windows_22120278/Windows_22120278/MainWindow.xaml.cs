@@ -63,6 +63,7 @@ namespace Windows_22120278
             ContentFrame.Navigate(typeof(ProfilePage));
             
             UpdateNavigationItemsEnabledState();
+            UpdateBackButtonState();
             
             this.SizeChanged += MainWindow_SizeChanged;
             
@@ -76,11 +77,32 @@ namespace Windows_22120278
 
         private void UpdateNavigationItemsEnabledState()
         {
-            var dashboardItem = NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag?.ToString() == "Dashboard");
-            if (dashboardItem != null)
+            var drawingItem = NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag?.ToString() == "Drawing");
+            var managementItem = NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag?.ToString() == "Management");
+            
+            if (drawingItem != null)
             {
-                dashboardItem.IsEnabled = _selectedProfileService.SelectedProfile != null;
+                drawingItem.IsEnabled = _selectedProfileService.SelectedProfile != null;
             }
+            
+            if (managementItem != null)
+            {
+                managementItem.IsEnabled = _selectedProfileService.SelectedProfile != null;
+            }
+        }
+
+        private void UpdateBackButtonState()
+        {
+            if (BackButton != null)
+            {
+                BackButton.IsEnabled = ContentFrame.CanGoBack;
+            }
+        }
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            var navigationService = App.Services.GetRequiredService<INavigationService>();
+            navigationService.GoBack();
         }
 
         private AppWindow? GetAppWindowForCurrentWindow()
@@ -96,10 +118,17 @@ namespace Windows_22120278
             {
                 switch (item.Tag?.ToString())
                 {
-                    case "Profiles":
+                    case "Home":
                         ContentFrame.Navigate(typeof(ProfilePage));
                         break;
-                    case "Dashboard":
+                    case "Drawing":
+                        if (_selectedProfileService.SelectedProfile != null)
+                        {
+                            var navigationService = App.Services.GetRequiredService<INavigationService>();
+                            navigationService.NavigateTo("DrawingPage");
+                        }
+                        break;
+                    case "Management":
                         if (_selectedProfileService.SelectedProfile != null)
                         {
                             ContentFrame.Navigate(typeof(DashboardPage));
@@ -120,15 +149,15 @@ namespace Windows_22120278
 
         private void ContentFrame_Navigated(object sender, NavigationEventArgs e)
         {
-            NavView.IsBackEnabled = ContentFrame.CanGoBack;
+            UpdateBackButtonState();
 
             if (e.SourcePageType == typeof(ProfilePage))
             {
-                NavView.SelectedItem = NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag?.ToString() == "Profiles");
+                NavView.SelectedItem = NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag?.ToString() == "Home");
             }
             else if (e.SourcePageType == typeof(DashboardPage))
             {
-                NavView.SelectedItem = NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag?.ToString() == "Dashboard");
+                NavView.SelectedItem = NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag?.ToString() == "Management");
             }
             else if (e.SourcePageType == typeof(SettingsPage))
             {
@@ -140,6 +169,10 @@ namespace Windows_22120278
                 {
                     _selectedProfileService.SelectedProfile = profile;
                 }
+                NavView.SelectedItem = NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag?.ToString() == "Drawing");
+            }
+            else
+            {
                 NavView.SelectedItem = null;
             }
         }
